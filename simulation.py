@@ -19,7 +19,7 @@ class PlayerWrapper:
 
     def intended_action(self, opponent):
         """Action before noise."""
-        return self.strategy.strategy(opponent.strategy)
+        return self.strategy.strategy(opponent)
 
     def choose_action(self, opponent, env: EnvironmentUpdater):
         """Action after applying noise."""
@@ -35,8 +35,13 @@ def play_round(p1, p2, env: EnvironmentUpdater,
     a1 = p1.choose_action(p2, env)
     a2 = p2.choose_action(p1, env)
 
-    p1.history.append(a1)
-    p2.history.append(a2)
+    if p2 not in p1.history:
+        p1.history[p2] = []
+    if p1 not in p2.history:
+        p2.history[p1] = []
+
+    p1.history[p2].append(a1)
+    p2.history[p1].append(a2)
 
     env.update_payoff(p1, p2, a1, a2)
     env.update_reputation(p1, p2, a1, a2, alpha_c, alpha_d)
