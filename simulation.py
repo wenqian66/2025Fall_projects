@@ -9,6 +9,19 @@ from player import (
 )
 
 class PlayerWrapper:
+    """
+    >>> p = PlayerWrapper(0, AllC, initial_wealth=100)
+    >>> p.id
+    0
+    >>> p.wealth
+    100
+    >>> p.bankrupt
+    False
+    >>> p.reputation
+    0.0
+    >>> p.noise
+    0.05
+    """
     def __init__(self, player_id, strategy_class, initial_wealth=10, noise=noise0):
         self.id = player_id
         self.strategy = strategy_class()
@@ -31,6 +44,19 @@ class PlayerWrapper:
         return env.apply_noise(action, self.noise)
 
     def record_actions(self, opponent_id, my_action, opp_action):
+        """
+        >>> p = PlayerWrapper(0, AllC)
+        >>> p.record_actions(1, 'C', 'D')
+        >>> p.my_history[1]
+        ['C']
+        >>> p.opp_history[1]
+        ['D']
+        >>> p.record_actions(1, 'C', 'C')
+        >>> p.my_history[1]
+        ['C', 'C']
+        >>> p.opp_history[1]
+        ['D', 'C']
+        """
         if opponent_id not in self.my_history:
             self.my_history[opponent_id] = []
             self.opp_history[opponent_id] = []
@@ -99,6 +125,23 @@ def run_monte_carlo(n_trials=1000, **kwargs):
 
 
 def analyze_trial(players):
+    """
+    >>> p1 = PlayerWrapper(0, AllC, initial_wealth=50)
+    >>> p2 = PlayerWrapper(1, AllC, initial_wealth=60)
+    >>> p3 = PlayerWrapper(2, AllD, initial_wealth=30)
+    >>> p3.bankrupt = True
+    >>> result = analyze_trial([p1, p2, p3])
+    >>> result['AllC']['total']
+    2
+    >>> result['AllC']['survived']
+    2
+    >>> result['AllC']['survival_rate']
+    1.0
+    >>> result['AllD']['survived']
+    0
+    >>> result['AllD']['survival_rate']
+    0.0
+    """
     by_strategy = {}
     for p in players:
         strategy_name = p.strategy.name
