@@ -116,29 +116,28 @@ class EnvironmentUpdater:
         """
         gamma is the enhancement
         delta is the punishment
+
         >>> class P:
-        ...     def __init__(self):
+        ...     def __init__(self, player_id):
+        ...         self.id = player_id
         ...         self.weights = {}
-        >>> p1, p2 = P(), P()
+        >>> p1, p2 = P(1), P(2)
         >>> env = EnvironmentUpdater()
 
-        # initialize missing keys
         >>> env.update_network(p1, p2, "C", "C")
-        >>> p1.weights[p2], p2.weights[p1]
+        >>> p1.weights[2], p2.weights[1]
         (1.0, 1.0)
 
-        # cooperation increases weight
         >>> env.update_network(p1, p2, "C", "C")
-        >>> p1.weights[p2], p2.weights[p1]
+        >>> p1.weights[2], p2.weights[1]
         (2.0, 2.0)
 
-        # defection decreases but not below zero
         >>> env.update_network(p1, p2, "D", "D")
-        >>> p2.weights[p1], p1.weights[p2]
+        >>> p1.weights[2], p2.weights[1]
         (1.0, 1.0)
 
         >>> env.update_network(p1, p2, "C", "D")
-        >>> p2.weights[p1], p1.weights[p2]
+        >>> p1.weights[2], p2.weights[1]
         (0, 0)
         """
         p1.weights[p2.id] = p1.weights.get(p2.id, 0)
