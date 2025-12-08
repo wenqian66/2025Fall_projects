@@ -1,2 +1,245 @@
-# 2025Fall_projects
-Forks from here that were made Nov-Dec 2025 are final projects from that semester.
+---
+
+# **Steal or Refrain: A Monte Carlo Simulation of Repeated Cooperation and Defection**
+
+**Team Member:**
+Wenqian Chen
+
+**Project Type:**
+Type I: Formal Critique and Improvement of a Published Data Analysis
+
+**GitHub Repository:**
+[https://github.com/wenqian66/2025Fall_projects](https://github.com/wenqian66/2025Fall_projects)
+
+---
+
+## **Project Description**
+
+This project critiques and substantially extends prior open-source Prisoner's Dilemma simulations. 
+
+**Limitations of existing simulations:**
+* Round-robin pairing 
+* Simplified noise models
+* Classical strategies only (TFT, GRIM, AllC, AllD)
+* No environmental information systems
+
+**This project adds:**
+* Reputation system tracking cooperation history (information only)
+* Network weights capturing pairwise relationship strength
+* Wealth dynamics with bankruptcy and welfare recovery
+* New strategies (RA-TFT, Coalition Builder) that exploit 
+  environmental information through **selective cooperation**
+
+Players interact over 10,000 rounds. Monte Carlo trials evaluate how environmental mechanisms alter strategic equilibria beyond classical PD results.
+
+---
+
+## **Base Payoff Matrix**
+
+|               | B Refrain (C) | B Steal (D) |
+| ------------- | ------------- | ----------- |
+| A Refrain (C) | (0.5, 0.5)    | (0.0, 1.0)  |
+| A Steal (D)   | (1.0, 0.0)    | (0.0, 0.0)  |
+
+---
+
+## **Rules**
+
+### **Base Rules**
+1. Two players paired for T rounds (default: 10,000)
+2. Each round: choose Refrain (C) or Steal (D)
+3. Payoffs follow base matrix
+4. Players observe opponent history and reputation
+5. Strategies fixed within simulation
+
+#### **Matching Algorithm**
+**Pure random pairing via random.shuffle()**, each round:
+1. Shuffle all active (non-bankrupt) players
+2. Pair adjacent players: (players[0], players[1]), (players[2], players[3])...
+3. Unpaired player (if odd number) sits out that round
+
+**Critical Design Choice:**
+- Reputation and network are **information only**
+- Matching is **not** affected by reputation/network weights
+- Assortative matching emerges through **strategic behavior** 
+  (Coalition Builder selectively cooperates), not system-imposed 
+  preferential pairing
+
+### **New Environmental Rules**
+
+**6. Reputation System**
+
+$$r_i \leftarrow \min(r_{\max}, r_i + \alpha_c) \quad \text{after cooperation}$$
+$$r_i \leftarrow \max(r_{\min}, r_i - \alpha_d) \quad \text{after defection}$$
+
+- **Observable by all players**
+- **Does not affect matching probability**
+- **Only RA-TFT strategy use this information, others ignore it (TFT, AllC, AllD)**
+
+**7. Network-Based Information**
+
+Each pair maintains edge weight $w(i,j)$:
+
+$$w(i,j) \leftarrow w(i,j) + \gamma \quad \text{after cooperation}$$
+$$w(i,j) \leftarrow \max(0, w(i,j) - \delta) \quad \text{after defection}$$
+
+- **Observable by all players**
+- **Does not affect matching probability**
+- **Only Coalition Builder strategy use this information, others ignore it**
+
+**8. Wealth & Bankruptcy**
+
+$$W_i \leftarrow W_i + \pi_i$$
+
+If $W_i < W_{\text{threshold}}$, player exits pool temporarily.
+
+**9. Welfare Recovery**
+
+$$W_i \leftarrow W_i + \beta \quad \text{if } W_i < W_{\text{threshold}}$$
+
+where $\beta = 0.05$ (fixed welfare per round).
+
+Mirrors real-world safety nets (unemployment insurance, welfare).
+
+---
+
+## **Strategies**
+
+### **Baseline Strategies**
+1. **AllC**: Always cooperate
+2. **AllD**: Always defect
+3. **TFT**: Tit-for-tat
+4. **GRIM**: Cooperate until first defection, then always defect
+5. **GTFT**: Forgiving TFT (forgiveness probability p)
+6. **RAND**: Random 50/50
+
+### **New Strategies**
+
+**7. Reputation-Aware TFT (RA-TFT)**
+
+$$
+\text{Action} = 
+\begin{cases}
+C, & \text{if } r_j > r_{\text{threshold}} \\
+D, & \text{if } r_j \leq r_{\text{threshold}} \text{ or opponent defected last round}
+\end{cases}
+$$
+
+Integrates reputation into TFT logic.
+
+**8. Coalition Builder**
+
+Identifies allies using network edge weights:
+
+$$
+\text{Action}(i,j) = 
+\begin{cases}
+C, & \text{if } w(i,j) \geq K_{\text{threshold}} \text{ (high-trust partner)} \\
+\text{TFT}, & \text{otherwise (new partner)}
+\end{cases}
+$$
+
+**Mechanism:**
+- Cooperates unconditionally with high-trust partners ($w \geq K$)
+- Uses TFT with new partners
+
+---
+
+## **Randomized Variables**
+* Player pairing (random.shuffle() each round)
+* Action noise ε (move flip probability)
+  - Default: ε = 0.05 (5% error rate)
+  - High-noise treatment (H3): ε = 0.15
+  - Models miscommunication/signal errors
+
+## **Controlled Variables**
+* Payoff matrix
+* Initial wealth W₀ = 10.0 (equal start for all players)
+* Monte Carlo trials (N = 1000)
+* GTFT forgiveness p
+* Reputation weights $\alpha_c, \alpha_d$
+* Network weights $\gamma, \delta$
+* Broke threshold $W_{\text{threshold}}$
+* Welfare amount β
+* Coalition threshold K
+
+---
+
+## **Three Phases**
+
+### **Phase 1: Design**
+
+Components:
+* Base PD model (Steal/Refrain)
+* Reputation system
+* Network matching
+* Wealth/bankruptcy mechanics
+* Welfare recovery
+
+### **Phase 2: Validation**
+
+**Technical Checks:**
+* AllC vs AllC → (0.5, 0.5)
+* AllD vs AllD → (0, 0)
+* TFT vs TFT (no noise) → full cooperation
+* Reputation increases/decreases correctly
+* Network clusters form
+* Welfare recovery functions
+
+**Classical PD Verification:**
+Confirm B1-B5 using baseline strategies only (sanity check, not contribution).
+
+### **Phase 3: Experiments**
+
+**Baseline Hypotheses (Well-Established, Verification Only)**
+
+**B1.** GRIM optimal in random pairing  
+**B2.** TFT/GTFT > AllC when defectors present  
+**B3.** GTFT > TFT when noise increases  
+**B4.** AllD exploits naive cooperators early  
+**B5.** Higher cooperation reward → more cooperation  
+
+---
+
+**Novel Hypotheses (Core Contributions)**
+
+**H1**: When reputation information is available, RA-TFT will outperform 
+standard TFT in average payoff.
+
+**H2**: When reputation and network information are available, Coalition 
+Builder will achieve the highest average payoff among all strategies(8).
+
+**H3**: Moderate welfare (β=0.05) helps conditional cooperators survive high-noise(ε=0.15) 
+environments, but excessive welfare (β≥0.15) enables unconditional cooperators 
+(AllC) to persist despite chronic exploitation, benefiting defectors (AllD) 
+and reducing mutual cooperation rates.
+
+*Test:* β = 0, 0.05, 0.10, 0.15, 0.20 under high noise (ε=0.15)
+
+*Metrics (at round 5000):*
+- Conditional cooperator survival (TFT, GTFT, GRIM)
+- Average wealth per survivor
+- Mutual cooperation vs exploitation rates
+- AllC exploitation frequency and welfare dependency (if alive)
+
+*Expected:* β=0.05 maximizes conditional cooperator survival and mutual 
+cooperation; β≥0.15 sustains AllC despite chronic exploitation (>60%), 
+benefiting AllD
+
+---
+
+## **References**
+
+* [https://en.wikipedia.org/wiki/Game_theory](https://en.wikipedia.org/wiki/Game_theory)
+* [https://en.wikipedia.org/wiki/Prisoner%27s_dilemma](https://en.wikipedia.org/wiki/Prisoner%27s_dilemma)
+* [https://blogs.cornell.edu/info2040/2012/09/21/split-or-steal-an-analysis-using-game-theory/](https://blogs.cornell.edu/info2040/2012/09/21/split-or-steal-an-analysis-using-game-theory/)
+* [https://github.com/Axelrod-Python/Axelrod](https://github.com/Axelrod-Python/Axelrod)
+* [https://github.com/josephius/power](https://github.com/josephius/power)
+* [https://github.com/jenna-jordan/Prisoners-Dilemma](https://github.com/jenna-jordan/Prisoners-Dilemma)
+* Bergstrom, T. (2003). *The Algebra of Assortative Encounters and the Evolution of Cooperation*.
+  UC Santa Barbara, Department of Economics.  
+  Retrieved from https://escholarship.org/uc/item/03f6s9jt
+---
+
+
+
