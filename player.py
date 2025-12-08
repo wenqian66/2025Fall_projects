@@ -1,6 +1,7 @@
-# baseline strategies code cite from axelrod and chatgpt
+# baseline(6) strategies code cite from axelrod and chatgpt
+#6+2 strategies in total
 
-#test the baseline strategies' first move
+#doctest test the baseline strategies' first move
 class AllC:
     """Always Cooperate
     >>> AllC().strategy(AllD()) == "C"
