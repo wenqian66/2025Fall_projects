@@ -68,6 +68,24 @@ def play_round(p1, p2, env,
                alpha_c=0.01, alpha_d=0.02,
                gamma=1.0, delta=1.0,
                welfare=0.05, bankrupt_threshold=0.0):
+    """
+    >>> env = EnvironmentUpdater()
+    >>> p1 = PlayerWrapper(0, AllC, initial_wealth=10, noise=0)
+    >>> p2 = PlayerWrapper(1, AllD, initial_wealth=10, noise=0)
+    >>> play_round(p1, p2, env)
+    >>> p1.wealth
+    10.0
+    >>> p2.wealth
+    11.0
+    >>> p1.reputation
+    0.01
+    >>> p2.reputation
+    -0.02
+    >>> p1.weights[1]
+    0
+    >>> p2.weights[0]
+    0
+    """
     a1 = p1.choose_action(p2, env)
     a2 = p2.choose_action(p1, env)
     p1.record_actions(p2.id, a1, a2)
@@ -80,6 +98,22 @@ def play_round(p1, p2, env,
 
 
 def random_pairing(players):
+    """
+    >>> p1 = PlayerWrapper(0, AllC)
+    >>> p2 = PlayerWrapper(1, AllD)
+    >>> p3 = PlayerWrapper(2, TFT)
+    >>> p3.bankrupt = True
+    >>> pairs = random_pairing([p1, p2, p3])
+    >>> len(pairs)
+    1
+    >>> p1 in pairs[0] or p2 in pairs[0]
+    True
+
+    >>> p4 = PlayerWrapper(3, GRIM)
+    >>> pairs = random_pairing([p1, p2, p3, p4])
+    >>> len(pairs)
+    1
+    """
     active = [p for p in players if not p.bankrupt]
     random.shuffle(active)
     pairs = []
