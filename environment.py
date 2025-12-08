@@ -152,8 +152,38 @@ class EnvironmentUpdater:
             p2.weights[p1] = max(0, p2.weights[p1] - delta)
 
     def update_bankruptcy(self, p, welfare=0.05, threshold=0):
-        if p.wealth < threshold:
-            p.bankrupt = True
+        """
+        >>> class P:
+        ...     def __init__(self, wealth):
+        ...         self.wealth = wealth
+        ...         self.bankrupt = False
+
+        >>> env = EnvironmentUpdater()
+
+        # wealth < threshold -> bankrupt
+        >>> p = P(-1)
+        >>> env.update_bankruptcy(p, welfare=0.1, threshold=0)
+        >>> p.bankrupt
+        True
+        >>> round(p.wealth, 2)
+        -0.9
+
+        # bankrupt -> welfare keeps adding
+        >>> env.update_bankruptcy(p, welfare=0.1, threshold=0)
+        >>> round(p.wealth, 2)
+        -0.8
+
+        # Bankruptcy is checked before welfare, so q.bankrupt updates one round late.
+        >>> q = P(-.09)
+        >>> env.update_bankruptcy(q, welfare=0.1, threshold=0)
+        >>> (q.bankrupt, round(q.wealth, 2))
+        (True, 0.01)
+
+        >>> env.update_bankruptcy(q, welfare=0.1, threshold=0)
+        >>> (q.bankrupt, round(q.wealth, 2))
+        (False, 0.01)
+        """
+        p.bankrupt = (p.wealth < threshold)
         if p.bankrupt:
             p.wealth += welfare
 
