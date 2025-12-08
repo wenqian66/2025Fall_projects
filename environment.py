@@ -1,0 +1,159 @@
+import random
+
+payoff = {
+    ("C", "C"): (0.5, 0.5),
+    ("C", "D"): (0.0, 1.0),
+    ("D", "C"): (1.0, 0.0),
+    ("D", "D"): (0.0, 0.0),
+}
+
+noise0 = 0.05
+reputation_max = 1
+reputation_min = -1
+
+class EnvironmentUpdater:
+    """Handles all external environment updates:
+       noise
+       payoff
+       reputation
+       network weights
+       wealth
+       bankruptcy
+    """
+    def apply_noise(self, action, noise):
+        """Flip C/D with probability noise.
+
+        # no noise
+        >>> env = EnvironmentUpdater()
+        >>> env.apply_noise("C", 0)
+        'C'
+        >>> env.apply_noise("D", 0)
+        'D'
+
+        >>> # full noise always flips
+        >>> flipped = [env.apply_noise("C", 1) for _ in range(5)]
+        >>> all(a == 'D' for a in flipped)
+        True
+
+        >>> # noise between 0 and 1 still returns valid action
+        >>> res = env.apply_noise("C", 0.5)
+        >>> res in ("C", "D")
+        True
+        """
+        if random.random() < noise:
+            return "D" if action == "C" else "C"
+        return action
+
+    def update_payoff(self, p1, p2, a1, a2):
+        """
+        p1,p2 are the players
+        a1,a2 are the chosen action
+        >>> class P: pass
+        >>> p1, p2 = P(), P()
+        >>> p1.wealth, p2.wealth = 0, 0
+        >>> env = EnvironmentUpdater()
+
+        >>> env.update_payoff(p1, p2, "C", "C")
+        >>> (p1.wealth, p2.wealth)
+        (0.5, 0.5)
+
+        >>> p1.wealth, p2.wealth = 0, 0
+        >>> env.update_payoff(p1, p2, "D", "D")
+        >>> (p1.wealth, p2.wealth)
+        (0.0, 0.0)
+
+        >>> p1.wealth, p2.wealth = 0, 0
+        >>> env.update_payoff(p1, p2, "C", "D")
+        >>> (p1.wealth, p2.wealth)
+        (0.0, 1.0)
+
+        >>> p1.wealth, p2.wealth = 0, 0
+        >>> env.update_payoff(p1, p2, "D", "C")
+        >>> (p1.wealth, p2.wealth)
+        (1.0, 0.0)
+        """
+        payoff1, payoff2 = payoff[(a1, a2)]
+        p1.wealth += payoff1
+        p2.wealth += payoff2
+
+    def update_reputation(self, p1, p2, a1, a2,
+                          alpha_c=0.01, alpha_d=0.02):
+        """
+        >>> class P: pass
+        >>> p1, p2 = P(), P()
+        >>> p1.reputation, p2.reputation = 0, 0
+        >>> env = EnvironmentUpdater()
+
+        # Cooperation increases reputation
+        >>> env.update_reputation(p1, p2, "C", "C")
+        >>> (p1.reputation, p2.reputation)
+        (0.01, 0.01)
+
+        # Defections decreases reputation
+        >>> p1.reputation, p2.reputation = 0, 0
+        >>> env.update_reputation(p1, p2, "D", "D")
+        >>> (p1.reputation, p2.reputation)
+        (-0.02, -0.02)
+
+        >>> p1.reputation, p2.reputation = 0, 0
+        >>> env.update_reputation(p1, p2, "C", "D")
+        >>> (p1.reputation, p2.reputation)
+        (0.01, -0.02)
+
+        # boundary
+        >>> p1.reputation, p2.reputation = 0.99, -0.99
+        >>> env.update_reputation(p1, p2, "C", "D")
+        >>> (p1.reputation, p2.reputation)
+        (1, -1)
+        """
+        p1.reputation += alpha_c if a1 == "C" else -alpha_d
+        p2.reputation += alpha_c if a2 == "C" else -alpha_d
+
+        p1.reputation = max(reputation_min, min(reputation_max, p1.reputation))
+        p2.reputation = max(reputation_min, min(reputation_max, p2.reputation))
+
+    def update_network(self, p1, p2, a1, a2, gamma=1.0, delta=1.0):
+        """
+        gamma is the enhancement
+        delta is the punishment
+        >>> class P:
+        ...     def __init__(self):
+        ...         self.weights = {}
+        >>> p1, p2 = P(), P()
+        >>> env = EnvironmentUpdater()
+
+        # initialize missing keys
+        >>> env.update_network(p1, p2, "C", "C")
+        >>> p1.weights[p2], p2.weights[p1]
+        (1.0, 1.0)
+
+        # cooperation increases weight
+        >>> env.update_network(p1, p2, "C", "C")
+        >>> p1.weights[p2], p2.weights[p1]
+        (2.0, 2.0)
+
+        # defection decreases but not below zero
+        >>> env.update_network(p1, p2, "D", "D")
+        >>> p2.weights[p1], p1.weights[p2]
+        (1.0, 1.0)
+
+        >>> env.update_network(p1, p2, "C", "D")
+        >>> p2.weights[p1], p1.weights[p2]
+        (0, 0)
+        """
+        p1.weights[p2] = p1.weights.get(p2, 0)
+        p2.weights[p1] = p2.weights.get(p1, 0)
+
+        if a1 == "C" and a2 == "C":
+            p1.weights[p2] += gamma
+            p2.weights[p1] += gamma
+        else:
+            p1.weights[p2] = max(0, p1.weights[p2] - delta)
+            p2.weights[p1] = max(0, p2.weights[p1] - delta)
+
+    def update_bankruptcy(self, p, welfare=0.05, threshold=0):
+        if p.wealth < threshold:
+            p.bankrupt = True
+        if p.bankrupt:
+            p.wealth += welfare
+

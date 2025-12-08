@@ -237,6 +237,16 @@ benefiting AllD
 * Bergstrom, T. (2003). *The Algebra of Assortative Encounters and the Evolution of Cooperation*.
   UC Santa Barbara, Department of Economics.  
   Retrieved from https://escholarship.org/uc/item/03f6s9jt
+* Nowak, M. A., & Sigmund, K. (1998). *Evolution of indirect reciprocity by image scoring*. Nature, 393(6685), 573–577.  
+  Retrieved from https://www.nature.com/articles/31225
+* Leibo, J. Z., Zambaldi, V., Lanctot, M., Marecki, J., & Graepel, T. (2017). 
+  *Multi-agent Reinforcement Learning in Sequential Social Dilemmas*. 
+  arXiv preprint arXiv:1702.03037. 
+  Retrieved from https://doi.org/10.48550/arXiv.1702.03037
+* Hilbe, C., Schmid, L., Tkadlec, J., Chatterjee, K., & Nowak, M. A. (2018). 
+  *Indirect reciprocity with private, noisy, and incomplete information*. 
+  Proceedings of the National Academy of Sciences, 115(48), 12241–12246. 
+  https://doi.org/10.1073/pnas.1810565115
 ---
 
 
