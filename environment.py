@@ -141,15 +141,15 @@ class EnvironmentUpdater:
         >>> p2.weights[p1], p1.weights[p2]
         (0, 0)
         """
-        p1.weights[p2] = p1.weights.get(p2, 0)
-        p2.weights[p1] = p2.weights.get(p1, 0)
+        p1.weights[p2.id] = p1.weights.get(p2.id, 0)
+        p2.weights[p1.id] = p2.weights.get(p1.id, 0)
 
         if a1 == "C" and a2 == "C":
-            p1.weights[p2] += gamma
-            p2.weights[p1] += gamma
+            p1.weights[p2.id] += gamma
+            p2.weights[p1.id] += gamma
         else:
-            p1.weights[p2] = max(0, p1.weights[p2] - delta)
-            p2.weights[p1] = max(0, p2.weights[p1] - delta)
+            p1.weights[p2.id] = max(0, p1.weights[p2.id] - delta)
+            p2.weights[p1.id] = max(0, p2.weights[p1.id] - delta)
 
     def update_bankruptcy(self, p, welfare=0.05, threshold=0):
         """
