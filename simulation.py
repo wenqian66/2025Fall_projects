@@ -10,7 +10,7 @@ class PlayerWrapper:
     """Player = strategy + dynamic state (wealth, rep, network, bankruptcy)."""
     def __init__(self, strategy_class, noise=noise0, wealth=10):
         self.strategy = strategy_class()
-        self.history = []
+        self.history = {}
         self.reputation = 0.0
         self.weights = {}
         self.wealth = wealth
@@ -34,7 +34,7 @@ def play_round(p1, p2, env: EnvironmentUpdater,
 
     a1 = p1.choose_action(p2, env)
     a2 = p2.choose_action(p1, env)
-    # Log own actions for future strategies (TFT, GRIM, etc.)
+
     p1.history.append(a1)
     p2.history.append(a2)
 

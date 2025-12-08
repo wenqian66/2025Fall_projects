@@ -1,6 +1,6 @@
 # baseline(6) strategies code cite from axelrod and chatgpt
 #6+2 strategies in total
-
+import random
 #doctest test the baseline strategies' first move
 class AllC:
     """Always Cooperate
@@ -9,7 +9,7 @@ class AllC:
     """
     name = "AllC"
     def __init__(self):
-        self.history = []
+        self.history = {}
     def strategy(self, opponent):
         return "C"
 
@@ -20,7 +20,7 @@ class AllD:
     """
     name = "AllD"
     def __init__(self):
-        self.history = []
+        self.history = {}
     def strategy(self, opponent):
         return "D"
 
@@ -31,11 +31,12 @@ class TFT:
     """
     name = "TFT"
     def __init__(self):
-        self.history = []
+        self.history = {}
     def strategy(self, opponent):
+        opp_hist = opponent.history.get(self, [])
         if not opponent.history:
             return "C"
-        return opponent.history[-1]
+        return opp_hist[-1]
 
 class GTFT:
     """Generous TFT: cooperate unless opponent defected AND random chance
@@ -44,15 +45,16 @@ class GTFT:
     """
     name = "GTFT"
     def __init__(self, p=0.1):
-        self.history = []
+        self.history = {}
         self.p = p
     def strategy(self, opponent):
-        import random
-        if not opponent.history:
+        opp_hist = opponent.history.get(self, [])
+        if not opp_hist:
             return "C"
-        if opponent.history[-1] == "D" and random.random() < self.p:
+        last = opp_hist[-1]
+        if last == "D" and random.random() < self.p:
             return "C"
-        return opponent.history[-1]
+        return last
 
 class GRIM:
     """Grim Trigger: Cooperate until opponent defects once, then always defect
@@ -61,10 +63,11 @@ class GRIM:
     """
     name = "Grim"
     def __init__(self):
-        self.history = []
+        self.history = {}
         self.grim = False
     def strategy(self, opponent):
-        if "D" in opponent.history:
+        opp_hist = opponent.history.get(self, [])
+        if "D" in opp_hist:
             self.grim = True
         return "D" if self.grim else "C"
 
@@ -72,7 +75,7 @@ class RAND:
     """Random strategy"""
     name = "Random"
     def __init__(self):
-        self.history = []
+        self.history = {}
     def strategy(self, opponent):
         import random
         return "C" if random.random() < 0.5 else "D"
@@ -88,14 +91,14 @@ class ReputationAwareTFT:
     'D'
 
     >>> p1._opponent_reputation = 0.7
-    >>> p2.history = ['C']
+    >>> p2.history[p1] = ['C','D','C']
     >>> p1.strategy(p2)
     'C'
     """
     name = "Reputation Aware TFT"
     def __init__(self, reputation_threshold=0.3):
         super().__init__()
-        self.history = []
+        self.history = {}
         self.reputation_threshold = reputation_threshold
 
     def strategy(self, opponent):
@@ -104,11 +107,10 @@ class ReputationAwareTFT:
         if opp_reputation <= self.reputation_threshold:
             return "D"
 
-        if not self.history:
+        opp_hist = opponent.history.get(self, [])
+        if not opp_hist:
             return "C"
-
-        # TFT
-        return opponent.history[-1]
+        return opp_hist[-1]
 
 
 class CoalitionBuilder:
