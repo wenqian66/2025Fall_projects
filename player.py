@@ -1,5 +1,6 @@
 # baseline strategies code cite from axelrod and chatgpt
 
+#test the baseline strategies' first move
 class AllC:
     """Always Cooperate
     >>> AllC().strategy(AllD()) == "C"
@@ -75,33 +76,25 @@ class RAND:
         import random
         return "C" if random.random() < 0.5 else "D"
 
-#test the baseline strategies' first move
-"""
-
-
-
-
->>> GRIM().strategy(AllC()) == "C"
-True
-"""
-
 class ReputationAwareTFT:
     """
     Always defect against low-reputation opponents
     Play TFT against high-reputation opponents
-    >>> import axelrod as axl
     >>> p1 = ReputationAwareTFT(reputation_threshold=0.5)
-    >>> p2 = axl.Cooperator()
+    >>> p2 = AllC()
     >>> p1._opponent_reputation = 0.3
     >>> p1.strategy(p2)
-    D
+    'D'
+
     >>> p1._opponent_reputation = 0.7
+    >>> p2.history = ['C']
     >>> p1.strategy(p2)
-    C
+    'C'
     """
     name = "Reputation Aware TFT"
     def __init__(self, reputation_threshold=0.3):
         super().__init__()
+        self.history = []
         self.reputation_threshold = reputation_threshold
 
     def strategy(self, opponent):
@@ -121,15 +114,14 @@ class CoalitionBuilder:
     """
     Cooperates with trusted partners (network weight >= K)
     Defects against others
-    >>> import axelrod as axl
     >>> p1 = CoalitionBuilder(K=10)
-    >>> p2 = axl.Cooperator()
+    >>> p2 = AllC()
     >>> p1._opponent_weight = 5
     >>> p1.strategy(p2)
-    D
+    'D'
     >>> p1._opponent_weight = 15
     >>> p1.strategy(p2)
-    C
+    'C'
     """
     name = "Coalition Builder"
 
