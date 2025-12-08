@@ -1,5 +1,3 @@
----
-
 # **Steal or Refrain: A Monte Carlo Simulation of Repeated Cooperation and Defection**
 
 **Team Member:**
