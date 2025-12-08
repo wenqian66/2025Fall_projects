@@ -19,7 +19,7 @@ class PlayerWrapper:
 
     def intended_action(self, opponent):
         """Action before noise."""
-        return self.strategy.strategy(opponent)
+        return self.strategy.strategy(opponent.strategy)
 
     def choose_action(self, opponent, env: EnvironmentUpdater):
         """Action after applying noise."""
