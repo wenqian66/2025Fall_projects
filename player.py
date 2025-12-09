@@ -90,8 +90,6 @@ class GRIM:
 class RAND:
     """Random strategy"""
     name = "Random"
-    def __init__(self):
-        self.history = {}
     def strategy(self, opponent):
         import random
         return "C" if random.random() < 0.5 else "D"
@@ -136,16 +134,17 @@ class CoalitionBuilder:
     Cooperates with trusted partners (network weight >= K)
     Defects against others
     >>> cb = CoalitionBuilder(K=10)
-    >>> cb._opponent_weight = 5
-    >>> cb.strategy(OpponentView([]))
+    >>> opp = OpponentView([])
+    >>> opp._weight = 5
+    >>> cb.strategy(opp)
     'D'
 
-    >>> cb._opponent_weight = 15
-    >>> cb.strategy(OpponentView([]))
+    >>> opp._weight = 15
+    >>> cb.strategy(opp)
     'C'
 
-    >>> cb._opponent_weight = 10
-    >>> cb.strategy(OpponentView([]))
+    >>> opp._weight = 10
+    >>> cb.strategy(opp)
     'C'
     """
     name = "Coalition Builder"
@@ -154,7 +153,7 @@ class CoalitionBuilder:
         self.K = K
 
     def strategy(self, opponent):
-        weight = getattr(self, '_opponent_weight', 0)
+        weight = getattr(opponent, '_weight', 0)
 
         if weight >= self.K:
             return "C"

@@ -4,8 +4,7 @@ import random
 from environment import EnvironmentUpdater, noise0
 from player import (
     OpponentView, ALL_STRATEGIES,
-    AllC, AllD, TFT, GTFT, GRIM, RAND,
-    ReputationAwareTFT, CoalitionBuilder
+    AllC, AllD, TFT, GRIM,
 )
 
 class PlayerWrapper:
