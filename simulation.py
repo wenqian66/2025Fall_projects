@@ -123,6 +123,7 @@ def random_pairing(players):
 
 def run_simulation(strategy_classes=None,
                    rounds=10000,
+                   copies_per_strategy=5,
                    initial_wealth=10,
                    noise=noise0,
                    alpha_c=0.01, alpha_d=0.02,
@@ -135,8 +136,8 @@ def run_simulation(strategy_classes=None,
     env = EnvironmentUpdater()
     players = []
     for sid, strategy_class in enumerate(strategy_classes):
-        for i in range(5):
-            player_id = sid * 5 + i
+        for i in range(copies_per_strategy):
+            player_id = sid * copies_per_strategy + i
             players.append(PlayerWrapper(player_id, strategy_class, initial_wealth, noise))
 
     for round_num in range(rounds):

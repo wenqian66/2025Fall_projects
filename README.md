@@ -106,7 +106,7 @@ Mirrors real-world safety nets (unemployment insurance, welfare).
 ### **Baseline Strategies**
 1. **AllC**: Always cooperate
 2. **AllD**: Always defect
-3. **TFT**: Tit-for-tat
+3. **TFT**: Tit-for-tat, start by cooperating, then mirror opponent's last move
 4. **GRIM**: Cooperate until first defection, then always defect
 5. **GTFT**: Forgiving TFT (forgiveness probability p)
 6. **RAND**: Random 50/50
@@ -123,7 +123,7 @@ D, & \text{if } r_j \leq r_{\text{threshold}} \text{ or opponent defected last r
 \end{cases}
 $$
 
-Integrates reputation into TFT logic.
+Integrates reputation into TFT logic. RA-TFT plays TFT with opponents who have high reputation; otherwise, it defects.
 
 **8. Coalition Builder**
 

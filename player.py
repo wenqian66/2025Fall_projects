@@ -137,6 +137,11 @@ class CoalitionBuilder:
     >>> opp = OpponentView([])
     >>> opp._weight = 5
     >>> cb.strategy(opp)
+    'C'
+
+    >>> opp.history = ['C','C','C','D']
+    >>> opp._weight = 5
+    >>> cb.strategy(opp)
     'D'
 
     >>> opp._weight = 15
@@ -157,7 +162,9 @@ class CoalitionBuilder:
 
         if weight >= self.K:
             return "C"
-        return "D"
+        if not opponent.history:
+            return "C"
+        return opponent.history[-1]
 
 
 ALL_STRATEGIES = [
