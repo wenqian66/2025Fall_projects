@@ -216,8 +216,12 @@ def aggregate_monte_carlo_results(results):
     }
 
 if __name__ == "__main__":
-    players = run_simulation(num_rounds=5000)
-    result = analyze_trial(players)
-    print(result)
-    for strategy, stats in result.items():
-        print(f"{strategy:20s}: Survival={stats['survival_rate']:.2%}, Avg Wealth={stats['avg_wealth']:.2f}")
+    test_params = DEFAULT_PARAMS.copy()
+    test_params['num_rounds'] = 1000
+    test_params['num_trials'] = 100
+
+    results = run_monte_carlo(test_params)
+    aggregated = aggregate_monte_carlo_results(results)
+
+    for strategy, stats in aggregated.items():
+        print(f"{strategy:20s}: Survival={stats['avg_survival_rate']:.2%}, Avg Wealth={stats['avg_wealth']:.2f}")
