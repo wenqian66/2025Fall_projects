@@ -57,22 +57,22 @@ class EnvironmentUpdater:
 
         >>> env.update_payoff(p1, p2, "C", "C")
         >>> (p1.wealth, p2.wealth)
-        (0.5, 0.5)
+        (3, 3)
 
         >>> p1.wealth, p2.wealth = 0, 0
         >>> env.update_payoff(p1, p2, "D", "D")
         >>> (p1.wealth, p2.wealth)
-        (0.0, 0.0)
+        (-2, -2)
 
         >>> p1.wealth, p2.wealth = 0, 0
         >>> env.update_payoff(p1, p2, "C", "D")
         >>> (p1.wealth, p2.wealth)
-        (0.0, 1.0)
+        (-3, 4)
 
         >>> p1.wealth, p2.wealth = 0, 0
         >>> env.update_payoff(p1, p2, "D", "C")
         >>> (p1.wealth, p2.wealth)
-        (1.0, 0.0)
+        (4, -3)
         """
         payoff1, payoff2 = payoff[(a1, a2)]
         p1.wealth += payoff1
