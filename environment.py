@@ -1,3 +1,5 @@
+#chatgpt used
+
 import random
 
 payoff = {
