@@ -62,27 +62,26 @@ class EnvironmentUpdater:
         >>> p1.reputation, p2.reputation = 0, 0
         >>> env = EnvironmentUpdater()
 
-        # Cooperation increases reputation
-        >>> env.update_reputation(p1, p2, "C", "C")
+        >>> env.update_reputation(p1, p2, "C", "C", 0.02, 0.04, 1.0, -1.0)
         >>> (p1.reputation, p2.reputation)
-        (0.01, 0.01)
+        (0.02, 0.02)
 
-        # Defections decreases reputation
+        # Defections decreases reputation (alpha_d=0.04)
         >>> p1.reputation, p2.reputation = 0, 0
-        >>> env.update_reputation(p1, p2, "D", "D")
+        >>> env.update_reputation(p1, p2, "D", "D", 0.02, 0.04, 1.0, -1.0)
         >>> (p1.reputation, p2.reputation)
-        (-0.02, -0.02)
+        (-0.04, -0.04)
 
         >>> p1.reputation, p2.reputation = 0, 0
-        >>> env.update_reputation(p1, p2, "C", "D")
+        >>> env.update_reputation(p1, p2, "C", "D", 0.02, 0.04, 1.0, -1.0)
         >>> (p1.reputation, p2.reputation)
-        (0.01, -0.02)
+        (0.02, -0.04)
 
         # boundary
         >>> p1.reputation, p2.reputation = 0.99, -0.99
-        >>> env.update_reputation(p1, p2, "C", "D")
-        >>> (p1.reputation, p2.reputation)
-        (1, -1)
+        >>> env.update_reputation(p1, p2, "C", "D", 0.02, 0.04, 1.0, -1.0)
+        >>> (round(p1.reputation, 2), round(p2.reputation, 2))
+        (1.0, -1.0)
         """
         p1.reputation += alpha_c if a1 == "C" else -alpha_d
         p2.reputation += alpha_c if a2 == "C" else -alpha_d
@@ -102,19 +101,19 @@ class EnvironmentUpdater:
         >>> p1, p2 = P(1), P(2)
         >>> env = EnvironmentUpdater()
 
-        >>> env.update_network(p1, p2, "C", "C")
+        >>> env.update_network(p1, p2, "C", "C", 1.0, 1.0)
         >>> p1.weights[2], p2.weights[1]
         (1.0, 1.0)
 
-        >>> env.update_network(p1, p2, "C", "C")
+        >>> env.update_network(p1, p2, "C", "C", 1.0, 1.0)
         >>> p1.weights[2], p2.weights[1]
         (2.0, 2.0)
 
-        >>> env.update_network(p1, p2, "D", "D")
+        >>> env.update_network(p1, p2, "D", "D", 1.0, 1.0)
         >>> p1.weights[2], p2.weights[1]
         (1.0, 1.0)
 
-        >>> env.update_network(p1, p2, "C", "D")
+        >>> env.update_network(p1, p2, "C", "D", 1.0, 1.0)
         >>> p1.weights[2], p2.weights[1]
         (0, 0)
         """
