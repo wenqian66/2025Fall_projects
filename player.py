@@ -101,20 +101,21 @@ class RAND:
 class ReputationAwareTFT:
     """
     Reputation-based strategy: uses GTFT for high rep, GRIM for low rep, TFT for medium
-    >>> ratft = ReputationAwareTFT(reputation_threshold=0.5)
+    >>> ratft = ReputationAwareTFT(reputation_threshold=-0.5, high_rep_threshold=0.3)
     >>> opp1 = OpponentView([])
-    >>> opp1._reputation = 0.3
+    >>> opp1._reputation = 0.0
     >>> ratft.strategy(opp1)
-    'D'
+    'C'
 
-    >>> opp2 = OpponentView(['C', 'D', 'C'])
-    >>> opp2._reputation = 0.7
+    >>> opp2 = OpponentView(['C'])
+    >>> opp2._reputation = 0.5
     >>> ratft.strategy(opp2)
     'C'
 
-    >>> opp3 = OpponentView(['D'])
-    >>> opp3._reputation = 0.8
-    >>> ratft.strategy(opp3)
+    >>> opp4 = OpponentView(['C', 'D'])
+    >>> opp4._reputation = -0.6
+    >>> opp4._id = 1
+    >>> ratft.strategy(opp4)
     'D'
     """
     name = "Reputation Aware TFT"
