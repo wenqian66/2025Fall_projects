@@ -35,9 +35,11 @@ Players interact over 10,000 rounds. Monte Carlo trials evaluate how environment
 ## **Base Payoff Matrix**
 
 |               | B Refrain (C) | B Steal (D) |
-| ------------- | ------------- | ----------- |
-| A Refrain (C) | (0.5, 0.5)    | (0.0, 1.0)  |
-| A Steal (D)   | (1.0, 0.0)    | (0.0, 0.0)  |
+| ------------- |---------------|-------------|
+| A Refrain (C) | (3, 3)        | (-3, 4)     |
+| A Steal (D)   | (4, -3)       | (-2, -2)    |
+
+The matrix follows the classcial Prisoner’s Dilemma problem requirements:   $T > R > P > S \quad \text{and} \quad 2R > T + S$
 
 ---
 
