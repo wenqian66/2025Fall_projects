@@ -1,4 +1,3 @@
-
 #1. payoff matrix
 PAYOFF = {
     ("C", "C"): (3, 3),
@@ -7,40 +6,36 @@ PAYOFF = {
     ("D", "D"): (-2, -2),
 }
 
-#2. default simulation parameters
+#2. default simulation and envir... parameters
 DEFAULT_PARAMS = {
     'num_rounds': 10000, # num of game rounds per simulation
     'num_trials': 1000, # num of simulation trails
     'players_per_strategy': 10,
 
-    # Economic
     'initial_wealth': 10.0,
-    'wealth_threshold': 0.0,
+    'broke_threshold': 0.0,
     'welfare': 0.05,
 
-    # Noise
-    'noise': 0.05,
+    'noise0': 0.05,
 
-    # Reputation
+    #reputation sys
     'alpha_c': 0.01,
     'alpha_d': 0.02,
     'reputation_max': 1.0,
     'reputation_min': -1.0,
     'reputation_threshold': 0.0,
 
-    # Network
+    #network sys
     'gamma': 1.0,
     'delta': 1.0,
     'network_threshold': 5.0,
 }
 
-# ============== Baseline Strategies (B1-B5 validation) ==============
 BASELINE_STRATEGIES = ['AllC', 'AllD', 'TFT', 'GRIM', 'GTFT', 'RAND']
+ALL_STRATEGIES = BASELINE_STRATEGIES + ['ReputationAwareTFT', 'CoalitionBuilder']
 
-# ============== All Strategies (H1-H3 experiments) ==============
-ALL_STRATEGIES = BASELINE_STRATEGIES + ['RA_TFT', 'CoalitionBuilder']
 
-# ============== Experiment Configurations ==============
+# 3.experiment Config
 
 # Baseline verification (classical PD)
 BASELINE_CONFIG = DEFAULT_PARAMS.copy()

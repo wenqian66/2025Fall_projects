@@ -1,17 +1,6 @@
 #chatgpt used
-
 import random
 
-payoff = {
-    ("C", "C"): (3, 3),
-    ("C", "D"): (-3, 4),
-    ("D", "C"): (4, -3),
-    ("D", "D"): (-2, -2),
-}
-
-noise0 = 0.05
-reputation_max = 1
-reputation_min = -1
 
 class EnvironmentUpdater:
     """Handles all external environment updates:
