@@ -221,7 +221,7 @@ def aggregate_monte_carlo_results(results):
 
 if __name__ == "__main__":
     test_params = DEFAULT_PARAMS.copy()
-    test_params['num_rounds'] = 1000
+    test_params['num_rounds'] = 10000
     test_params['num_trials'] = 100
 
     results = run_monte_carlo(test_params)

@@ -1,9 +1,16 @@
 #1. payoff matrix
+# PAYOFF = {
+#     ("C", "C"): (3, 3),
+#     ("C", "D"): (-3, 4),
+#     ("D", "C"): (4, -3),
+#     ("D", "D"): (-2, -2),
+# }
+
 PAYOFF = {
-    ("C", "C"): (3, 3),
-    ("C", "D"): (-3, 4),
-    ("D", "C"): (4, -3),
-    ("D", "D"): (-2, -2),
+    ("C", "C"): (2, 2),
+    ("C", "D"): (-5, 6),
+    ("D", "C"): (6, -5),
+    ("D", "D"): (-4, -4),
 }
 
 #2. default simulation and envir... parameters
@@ -20,7 +27,16 @@ DEFAULT_PARAMS = {
         'ReputationAwareTFT': 10,
         'CoalitionBuilder': 10,
     },
-
+    # 'player_counts': {
+    #     'AllC': 5,
+    #     'AllD': 15,
+    #     'TFT': 10,
+    #     'GTFT': 10,
+    #     'GRIM': 5,
+    #     'RAND': 10,
+    #     'ReputationAwareTFT': 15,
+    #     'CoalitionBuilder': 20,
+    # },
     'initial_wealth': 10.0,
     'wealth_threshold': 0.0,
     'welfare': 0.05,
