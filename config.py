@@ -19,16 +19,19 @@ DEFAULT_PARAMS = {
     'noise': 0.05,
 
     #reputation sys
-    'alpha_c': 0.01,
-    'alpha_d': 0.02,
+    'alpha_c': 0.02,
+    'alpha_d': 0.04,
     'reputation_max': 1.0,
     'reputation_min': -1.0,
-    'reputation_threshold': -0.1,
+    'reputation_threshold': -0.3,
 
     #network sys
     'gamma': 1.0,
     'delta': 1.0,
     'network_threshold': 5.0,
+
+    'gtft_forgiveness': 0.1,
+    'ratft_high_rep_threshold': 0.3,
 }
 
 BASELINE_STRATEGIES = ['AllC', 'AllD', 'TFT', 'GRIM', 'GTFT', 'RAND']
@@ -74,5 +77,3 @@ H3_CONFIGS = {
     for w in H3_WELFARE_LEVELS
 }
 
-# ============== GTFT Parameters ==============
-GTFT_FORGIVENESS_PROB = 0.1

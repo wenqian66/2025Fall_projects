@@ -1,6 +1,8 @@
 # baseline(6) strategies code cite from axelrod and chatgpt
 #6+2 strategies in total
 import random
+from config import DEFAULT_PARAMS
+
 
 class OpponentView:
     def __init__(self, history):
@@ -51,7 +53,9 @@ class GTFT:
     True
     """
     name = "GTFT"
-    def __init__(self, p=0.1):
+    def __init__(self, p=None):
+        if p is None:
+            p = DEFAULT_PARAMS['gtft_forgiveness']
         self.p = p
     def strategy(self, opponent):
         if not opponent.history:
@@ -96,8 +100,7 @@ class RAND:
 
 class ReputationAwareTFT:
     """
-    Always defect against low-reputation opponents
-    Play TFT against high-reputation opponents
+    Reputation-based strategy: uses GTFT for high rep, GRIM for low rep, TFT for medium
     >>> ratft = ReputationAwareTFT(reputation_threshold=0.5)
     >>> opp1 = OpponentView([])
     >>> opp1._reputation = 0.3
@@ -115,18 +118,27 @@ class ReputationAwareTFT:
     'D'
     """
     name = "Reputation Aware TFT"
-    def __init__(self, reputation_threshold=0.3):
+
+    def __init__(self, reputation_threshold=None, high_rep_threshold=None):
+        if reputation_threshold is None:
+            reputation_threshold = DEFAULT_PARAMS['reputation_threshold']
+        if high_rep_threshold is None:
+            high_rep_threshold = DEFAULT_PARAMS['ratft_high_rep_threshold']
         self.reputation_threshold = reputation_threshold
+        self.high_rep_threshold = high_rep_threshold
+        self.tft = TFT()
+        self.gtft = GTFT()
+        self.grim = GRIM()
 
     def strategy(self, opponent):
         opp_reputation = getattr(opponent, '_reputation', 0.0)
 
-        if opp_reputation <= self.reputation_threshold:
-            return "D"
-
-        if not opponent.history:
-            return "C"
-        return opponent.history[-1]
+        if opp_reputation > self.high_rep_threshold:
+            return self.gtft.strategy(opponent)
+        elif opp_reputation < self.reputation_threshold:
+            return self.grim.strategy(opponent)
+        else:
+            return self.tft.strategy(opponent)
 
 
 class CoalitionBuilder:
@@ -154,17 +166,17 @@ class CoalitionBuilder:
     """
     name = "Coalition Builder"
 
-    def __init__(self, K=10):
+    def __init__(self, K=None):
+        if K is None:
+            K = DEFAULT_PARAMS['network_threshold']
         self.K = K
+        self.tft = TFT()
 
     def strategy(self, opponent):
         weight = getattr(opponent, '_weight', 0)
-
         if weight >= self.K:
             return "C"
-        if not opponent.history:
-            return "C"
-        return opponent.history[-1]
+        return self.tft.strategy(opponent)
 
 
 ALL_STRATEGIES = [
