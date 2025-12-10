@@ -1,0 +1,232 @@
+/Users/wenqian/Desktop/msim/is597/2025Fall_projects/venv/bin/python /Users/wenqian/Desktop/msim/is597/2025Fall_projects/experiments.py
+
+======================================================================
+RUNNING ALL EXPERIMENTS
+======================================================================
+======================================================================
+H1: TFT vs RA-TFT across reputation signal strengths
+======================================================================
+
+no_rep: alpha_c=0.0, alpha_d=0.0
+Trial 0/50
+AllC                : Survival=96.80% ±1.61%, Wealth=13184.57 ±251.20
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.32 ±0.09
+TFT                 : Survival=98.67% ±0.83%, Wealth=3931.22 ±74.41
+GTFT                : Survival=97.60% ±1.52%, Wealth=7978.33 ±145.97
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.33 ±0.10
+Random              : Survival=21.20% ±3.83%, Wealth=1015.01 ±179.12
+Reputation Aware TFT: Survival=99.07% ±0.64%, Wealth=3914.48 ±88.24
+
+weak_rep: alpha_c=0.005, alpha_d=0.01
+Trial 0/50
+AllC                : Survival=96.00% ±1.75%, Wealth=14627.73 ±267.58
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.34 ±0.10
+TFT                 : Survival=46.93% ±3.47%, Wealth=2217.30 ±186.64
+GTFT                : Survival=98.80% ±1.06%, Wealth=10467.00 ±118.18
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.35 ±0.09
+Random              : Survival=0.00% ±0.00%, Wealth=-2.54 ±0.11
+Reputation Aware TFT: Survival=87.20% ±5.74%, Wealth=3218.76 ±784.74
+
+moderate_rep: alpha_c=0.02, alpha_d=0.04
+Trial 0/50
+AllC                : Survival=96.60% ±1.53%, Wealth=14910.86 ±247.27
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.38 ±0.08
+TFT                 : Survival=74.53% ±3.32%, Wealth=4284.41 ±232.24
+GTFT                : Survival=98.20% ±1.32%, Wealth=10667.70 ±131.36
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.35 ±0.10
+Random              : Survival=0.00% ±0.00%, Wealth=-2.48 ±0.11
+Reputation Aware TFT: Survival=11.07% ±1.94%, Wealth=175.85 ±44.23
+
+strong_rep: alpha_c=0.05, alpha_d=0.1
+Trial 0/50
+AllC                : Survival=97.60% ±1.31%, Wealth=15111.52 ±209.20
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.33 ±0.10
+TFT                 : Survival=90.67% ±2.28%, Wealth=5758.89 ±164.00
+GTFT                : Survival=97.60% ±1.31%, Wealth=10352.36 ±177.16
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.38 ±0.10
+Random              : Survival=0.00% ±0.00%, Wealth=-2.39 ±0.10
+Reputation Aware TFT: Survival=4.80% ±1.38%, Wealth=92.73 ±34.13
+
+======================================================================
+H1 SUMMARY
+======================================================================
+Signal           alpha_c  alpha_d          TFT       RA-TFT    Advantage
+----------------------------------------------------------------------
+no_rep             0.000    0.000      3931.22      3914.48        -0.4%
+weak_rep           0.005    0.010      2217.30      3218.76        45.2%
+moderate_rep       0.020    0.040      4284.41       175.85       -95.9%
+strong_rep         0.050    0.100      5758.89        92.73       -98.4%
+
+======================================================================
+H2: NETWORK THRESHOLD EFFECT
+======================================================================
+
+======================================================================
+Testing: easy_coalition (K=3.0)
+======================================================================
+Trial 0/50
+AllC                : Survival=74.75% ±4.83%, Wealth=12069.81 ±780.02
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.38 ±0.08
+TFT                 : Survival=84.60% ±3.43%, Wealth=6711.68 ±428.73
+GTFT                : Survival=84.67% ±3.31%, Wealth=10959.97 ±407.90
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.38 ±0.15
+Random              : Survival=0.00% ±0.00%, Wealth=-2.55 ±0.13
+Reputation Aware TFT: Survival=92.00% ±2.29%, Wealth=9935.79 ±456.93
+Coalition Builder   : Survival=83.90% ±2.12%, Wealth=12015.98 ±302.42
+
+>>> Highest wealth: AllC (12069.81)
+
+======================================================================
+Testing: moderate_coalition (K=5.0)
+======================================================================
+Trial 0/50
+AllC                : Survival=74.50% ±4.70%, Wealth=12040.47 ±753.23
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.38 ±0.08
+TFT                 : Survival=80.80% ±3.54%, Wealth=6798.85 ±432.88
+GTFT                : Survival=83.33% ±3.39%, Wealth=10910.48 ±422.84
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.31 ±0.12
+Random              : Survival=0.00% ±0.00%, Wealth=-2.59 ±0.14
+Reputation Aware TFT: Survival=88.00% ±3.09%, Wealth=9865.39 ±531.95
+Coalition Builder   : Survival=86.40% ±2.37%, Wealth=12441.33 ±330.53
+
+>>> Highest wealth: Coalition Builder (12441.33)
+
+======================================================================
+Testing: hard_coalition (K=8.0)
+======================================================================
+Trial 0/50
+AllC                : Survival=71.50% ±4.70%, Wealth=11569.98 ±771.16
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.43 ±0.08
+TFT                 : Survival=81.80% ±3.22%, Wealth=6255.64 ±474.51
+GTFT                : Survival=84.00% ±3.13%, Wealth=10955.18 ±399.31
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.39 ±0.16
+Random              : Survival=0.00% ±0.00%, Wealth=-2.54 ±0.13
+Reputation Aware TFT: Survival=90.20% ±2.18%, Wealth=9343.52 ±722.96
+Coalition Builder   : Survival=85.80% ±2.66%, Wealth=12313.26 ±370.12
+
+>>> Highest wealth: Coalition Builder (12313.26)
+
+======================================================================
+Testing: very_hard_coalition (K=12.0)
+======================================================================
+Trial 0/50
+AllC                : Survival=74.25% ±4.67%, Wealth=11992.25 ±755.64
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.39 ±0.08
+TFT                 : Survival=85.60% ±2.67%, Wealth=7002.47 ±338.80
+GTFT                : Survival=85.83% ±2.82%, Wealth=11114.14 ±365.42
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.23 ±0.13
+Random              : Survival=0.00% ±0.00%, Wealth=-2.39 ±0.11
+Reputation Aware TFT: Survival=92.40% ±2.39%, Wealth=10400.77 ±352.95
+Coalition Builder   : Survival=86.20% ±2.07%, Wealth=12315.40 ±293.18
+
+>>> Highest wealth: Coalition Builder (12315.40)
+
+======================================================================
+H2 SUMMARY: Network Threshold vs Coalition Builder Performance
+======================================================================
+Threshold                   K    CB Wealth     CB Survival     Highest Strategy
+----------------------------------------------------------------------
+easy_coalition            3.0     12015.98         83.90%                 AllC
+moderate_coalition        5.0     12441.33         86.40%    Coalition Builder
+hard_coalition            8.0     12313.26         85.80%    Coalition Builder
+very_hard_coalition      12.0     12315.40         86.20%    Coalition Builder
+
+======================================================================
+H3: WELFARE LEVELS UNDER HIGH NOISE
+======================================================================
+
+======================================================================
+Testing: welfare_00 (welfare=0.00, noise=0.15)
+======================================================================
+Trial 0/50
+AllC                : Survival=45.20% ±5.38%, Wealth=1742.76 ±207.86
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.33 ±0.08
+TFT                 : Survival=39.60% ±4.86%, Wealth=1167.16 ±157.94
+GTFT                : Survival=47.40% ±5.37%, Wealth=1552.60 ±188.84
+Grim                : Survival=6.20% ±2.65%, Wealth=87.17 ±54.01
+Random              : Survival=1.60% ±1.16%, Wealth=33.51 ±27.62
+Reputation Aware TFT: Survival=0.60% ±0.86%, Wealth=7.79 ±14.19
+Coalition Builder   : Survival=39.20% ±4.73%, Wealth=1337.63 ±190.23
+
+>>> Conditional Cooperators: Survival=31.07%, Wealth=935.64
+>>> AllC: Survival=45.20%, Wealth=1742.76
+
+======================================================================
+Testing: welfare_10 (welfare=0.10, noise=0.15)
+======================================================================
+Trial 0/50
+AllC                : Survival=45.60% ±5.58%, Wealth=1805.35 ±237.14
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.29 ±0.11
+TFT                 : Survival=39.00% ±5.74%, Wealth=1182.15 ±175.04
+GTFT                : Survival=48.40% ±5.72%, Wealth=1694.71 ±206.30
+Grim                : Survival=5.20% ±2.23%, Wealth=61.24 ±28.18
+Random              : Survival=1.80% ±1.06%, Wealth=37.13 ±24.58
+Reputation Aware TFT: Survival=0.20% ±0.39%, Wealth=-0.62 ±3.24
+Coalition Builder   : Survival=42.80% ±4.33%, Wealth=1514.30 ±187.11
+
+>>> Conditional Cooperators: Survival=30.87%, Wealth=979.37
+>>> AllC: Survival=45.60%, Wealth=1805.35
+
+======================================================================
+Testing: welfare_20 (welfare=0.20, noise=0.15)
+======================================================================
+Trial 0/50
+AllC                : Survival=46.00% ±4.93%, Wealth=1905.59 ±241.33
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.22 ±0.09
+TFT                 : Survival=38.80% ±5.04%, Wealth=1212.93 ±156.10
+GTFT                : Survival=46.20% ±4.86%, Wealth=1596.76 ±175.15
+Grim                : Survival=4.60% ±2.01%, Wealth=65.91 ±38.63
+Random              : Survival=0.60% ±0.86%, Wealth=9.57 ±16.19
+Reputation Aware TFT: Survival=1.00% ±1.00%, Wealth=24.72 ±28.73
+Coalition Builder   : Survival=39.80% ±5.13%, Wealth=1436.19 ±196.99
+
+>>> Conditional Cooperators: Survival=29.87%, Wealth=958.53
+>>> AllC: Survival=46.00%, Wealth=1905.59
+
+======================================================================
+Testing: welfare_30 (welfare=0.30, noise=0.15)
+======================================================================
+Trial 0/50
+AllC                : Survival=41.00% ±4.44%, Wealth=1735.43 ±214.43
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.10 ±0.10
+TFT                 : Survival=37.40% ±4.89%, Wealth=1129.28 ±142.89
+GTFT                : Survival=50.20% ±4.91%, Wealth=1766.49 ±188.71
+Grim                : Survival=3.40% ±2.05%, Wealth=38.72 ±32.46
+Random              : Survival=0.20% ±0.39%, Wealth=5.24 ±14.42
+Reputation Aware TFT: Survival=0.40% ±0.54%, Wealth=4.32 ±9.63
+Coalition Builder   : Survival=37.80% ±4.51%, Wealth=1393.00 ±187.24
+
+>>> Conditional Cooperators: Survival=30.33%, Wealth=978.16
+>>> AllC: Survival=41.00%, Wealth=1735.43
+
+======================================================================
+Testing: welfare_40 (welfare=0.40, noise=0.15)
+======================================================================
+Trial 0/50
+AllC                : Survival=41.80% ±4.85%, Wealth=1656.02 ±201.27
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.00 ±0.12
+TFT                 : Survival=34.40% ±5.09%, Wealth=1025.50 ±154.45
+GTFT                : Survival=50.40% ±5.79%, Wealth=1673.23 ±211.79
+Grim                : Survival=4.40% ±1.68%, Wealth=67.35 ±30.33
+Random              : Survival=0.80% ±0.75%, Wealth=20.70 ±21.50
+Reputation Aware TFT: Survival=0.40% ±0.54%, Wealth=2.41 ±6.71
+Coalition Builder   : Survival=34.00% ±5.23%, Wealth=1240.34 ±212.15
+
+>>> Conditional Cooperators: Survival=29.73%, Wealth=922.03
+>>> AllC: Survival=41.80%, Wealth=1656.02
+
+======================================================================
+H3 SUMMARY: Welfare Effects on Conditional Cooperators vs AllC
+======================================================================
+   Welfare     CC_Survival    CC_Wealth   AllC_Survival  AllC_Wealth
+----------------------------------------------------------------------
+      0.00         31.07%       935.64         45.20%      1742.76
+      0.10         30.87%       979.37         45.60%      1805.35
+      0.20         29.87%       958.53         46.00%      1905.59
+      0.30         30.33%       978.16         41.00%      1735.43
+      0.40         29.73%       922.03         41.80%      1656.02
+
+======================================================================
+ALL EXPERIMENTS COMPLETED
+======================================================================
+

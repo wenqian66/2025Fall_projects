@@ -43,7 +43,7 @@ class TFT:
         return opponent.history[-1]
 
 class GTFT:
-    """Generous TFT: cooperate unless opponent defected AND random chance
+    """Generous TFT: cooperate first, then p to coopertate and (1-p) do TFT
     >>> GTFT().strategy(OpponentView([])) == "C"
     True
     >>> GTFT().strategy(OpponentView(['C'])) == "C"
@@ -129,7 +129,6 @@ class ReputationAwareTFT:
         self.high_rep_threshold = high_rep_threshold
         self.tft = TFT()
         self.gtft = GTFT()
-        self.grim = GRIM()
 
     def strategy(self, opponent):
         opp_reputation = getattr(opponent, '_reputation', 0.0)

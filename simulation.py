@@ -232,3 +232,34 @@ if __name__ == "__main__":
     aggregated = aggregate_monte_carlo_results(results)
 
     print_results_with_ci(aggregated)
+
+
+"""
+Process finished with exit code 0
+
+
+/Users/wenqian/Desktop/msim/is597/2025Fall_projects/venv/bin/python /Users/wenqian/Desktop/msim/is597/2025Fall_projects/simulation.py
+Trial 0/100
+AllC                : Survival=90.00% ±1.82%, Wealth=14162.91 ±287.62
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.33 ±0.07
+TFT                 : Survival=87.50% ±2.14%, Wealth=5267.40 ±227.79
+GTFT                : Survival=94.10% ±1.47%, Wealth=11559.54 ±168.76
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.30 ±0.07
+Random              : Survival=0.00% ±0.00%, Wealth=-2.49 ±0.08
+Reputation Aware TFT: Survival=91.90% ±1.77%, Wealth=4215.57 ±671.68
+Coalition Builder   : Survival=95.00% ±1.29%, Wealth=13631.37 ±194.44
+
+Process finished with exit code 0
+
+/Users/wenqian/Desktop/msim/is597/2025Fall_projects/venv/bin/python /Users/wenqian/Desktop/msim/is597/2025Fall_projects/simulation.py
+Trial 0/100
+AllC                : Survival=89.40% ±2.13%, Wealth=14079.63 ±331.56
+AllD                : Survival=0.00% ±0.00%, Wealth=-2.38 ±0.07
+TFT                 : Survival=87.90% ±2.15%, Wealth=5376.58 ±255.16
+GTFT                : Survival=94.50% ±1.34%, Wealth=11608.82 ±166.79
+Grim                : Survival=0.00% ±0.00%, Wealth=-2.32 ±0.08
+Random              : Survival=0.00% ±0.00%, Wealth=-2.58 ±0.08
+Reputation Aware TFT: Survival=90.80% ±1.81%, Wealth=4052.32 ±661.06
+Coalition Builder   : Survival=94.20% ±1.36%, Wealth=13572.21 ±194.59
+
+Process finished with exit code 0"""
