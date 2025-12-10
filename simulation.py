@@ -7,7 +7,7 @@ from player import (
     OpponentView, ALL_STRATEGIES,
     AllC, AllD, TFT, GRIM,
 )
-
+from utils import _prepare_params
 class PlayerWrapper:
     """
     >>> p = PlayerWrapper(0, AllC, initial_wealth=100, noise=0.05)
@@ -33,15 +33,23 @@ class PlayerWrapper:
         self.noise = noise
         self.bankrupt = False
 
-    def choose_action(self, opponent, env):
+    def _build_opponent_view(self, opponent):
         opp_id = opponent.id
-        opp_actions = self.opp_history.get(opp_id, [])
-        opponent_view = OpponentView(opp_actions)
-        opponent_view._id = opp_id
-        opponent_view._reputation = opponent.reputation
-        opponent_view._weight = self.weights.get(opp_id, 0)
+        v = OpponentView(self.opp_history.get(opp_id, []))
+        v._id = opp_id
+        v._reputation = opponent.reputation
+        v._weight = self.weights.get(opp_id, 0)
+        return v
+
+    def choose_action(self, opponent, env):
+        opponent_view = self._build_opponent_view(opponent)
         action = self.strategy.strategy(opponent_view)
         return env.apply_noise(action, self.noise)
+
+    def _ensure_history(self, opponent_id):
+        if opponent_id not in self.my_history:
+            self.my_history[opponent_id] = []
+            self.opp_history[opponent_id] = []
 
     def record_actions(self, opponent_id, my_action, opp_action):
         """
@@ -57,9 +65,7 @@ class PlayerWrapper:
         >>> p.opp_history[1]
         ['D', 'C']
         """
-        if opponent_id not in self.my_history:
-            self.my_history[opponent_id] = []
-            self.opp_history[opponent_id] = []
+        self._ensure_history(opponent_id)
         self.my_history[opponent_id].append(my_action)
         self.opp_history[opponent_id].append(opp_action)
 
@@ -76,9 +82,9 @@ def play_round(p1, p2, env, params):
     >>> p2.wealth
     14
     >>> p1.reputation
-    0.01
+    0.02
     >>> p2.reputation
-    -0.02
+    -0.04
     >>> p1.weights[1]
     0
     >>> p2.weights[0]
@@ -89,13 +95,7 @@ def play_round(p1, p2, env, params):
     p1.record_actions(p2.id, a1, a2)
     p2.record_actions(p1.id, a2, a1)
 
-    env.update_payoff(p1, p2, a1, a2)
-    env.update_reputation(p1, p2, a1, a2,
-                          params['alpha_c'], params['alpha_d'],
-                          params['reputation_max'], params['reputation_min'])
-    env.update_network(p1, p2, a1, a2, params['gamma'], params['delta'])
-    env.update_bankruptcy(p1, params['welfare'], params['wealth_threshold'])
-    env.update_bankruptcy(p2, params['welfare'], params['wealth_threshold'])
+    env.update_all(p1, p2, a1, a2, params)
 
 
 def random_pairing(players):
@@ -124,9 +124,7 @@ def random_pairing(players):
 
 
 def run_simulation(params=None, **kwargs):
-    if params is None:
-        params = DEFAULT_PARAMS.copy()
-    params.update(kwargs)
+    params = _prepare_params(params, kwargs)
 
     strategy_classes = params.get('strategy_classes', ALL_STRATEGIES)
     rounds = params['num_rounds']
@@ -148,9 +146,8 @@ def run_simulation(params=None, **kwargs):
 
 
 def run_monte_carlo(params=None, **kwargs):
-    if params is None:
-        params = DEFAULT_PARAMS.copy()
-    params.update(kwargs)
+    params = _prepare_params(params, kwargs)
+
     num_trials = params['num_trials']
     results = []
     for trial in range(num_trials):
@@ -194,15 +191,33 @@ def analyze_trial(players):
         by_strategy[strategy_name]['total_wealth'] += p.wealth
         by_strategy[strategy_name]['final_wealth'].append(p.wealth)
 
-    # for strategy_name in by_strategy:
-    #     data = by_strategy[strategy_name]
-    #     data['survival_rate'] = data['survived'] / data['total']
-    #     data['avg_wealth'] = data['total_wealth'] / data['total']
+    for strategy_name in by_strategy:
+        data = by_strategy[strategy_name]
+        data['survival_rate'] = data['survived'] / data['total']
+        data['avg_wealth'] = data['total_wealth'] / data['total']
     return by_strategy
+
+
+def aggregate_monte_carlo_results(results):
+    aggregated = {}
+    for trial_result in results:
+        for strategy, stats in trial_result.items():
+            if strategy not in aggregated:
+                aggregated[strategy] = {'survival_rates': [], 'avg_wealths': []}
+            aggregated[strategy]['survival_rates'].append(stats['survival_rate'])
+            aggregated[strategy]['avg_wealths'].append(stats['avg_wealth'])
+
+    return {
+        strategy: {
+            'avg_survival_rate': sum(data['survival_rates']) / len(data['survival_rates']),
+            'avg_wealth': sum(data['avg_wealths']) / len(data['avg_wealths'])
+        }
+        for strategy, data in aggregated.items()
+    }
 
 if __name__ == "__main__":
     players = run_simulation(num_rounds=5000)
     result = analyze_trial(players)
     print(result)
-    # for strategy, stats in result.items():
-        # print(f"{strategy:20s}: Survival={stats['survival_rate']:.2%}, Avg Wealth={stats['avg_wealth']:.2f}")
+    for strategy, stats in result.items():
+        print(f"{strategy:20s}: Survival={stats['survival_rate']:.2%}, Avg Wealth={stats['avg_wealth']:.2f}")

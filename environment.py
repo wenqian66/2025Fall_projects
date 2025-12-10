@@ -163,3 +163,16 @@ class EnvironmentUpdater:
         if p.bankrupt:
             p.wealth += welfare
 
+    def update_all(self, p1, p2, a1, a2, params):
+        self.update_payoff(p1, p2, a1, a2)
+        self.update_reputation(
+            p1, p2, a1, a2,
+            params['alpha_c'], params['alpha_d'],
+            params['reputation_max'], params['reputation_min']
+        )
+        self.update_network(
+            p1, p2, a1, a2,
+            params['gamma'], params['delta']
+        )
+        self.update_bankruptcy(p1, params['welfare'], params['wealth_threshold'])
+        self.update_bankruptcy(p2, params['welfare'], params['wealth_threshold'])
