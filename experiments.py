@@ -5,9 +5,7 @@ from utils import print_results_with_ci
 
 
 def run_h1_experiment():
-    print("=" * 70)
     print("H1: TFT vs RA-TFT across reputation signal strengths")
-    print("=" * 70)
 
     results = {}
     for signal_name, config in H1_CONFIGS.items():
@@ -17,11 +15,8 @@ def run_h1_experiment():
         results[signal_name] = agg
         print_results_with_ci(agg)
 
-    print("\n" + "=" * 70)
     print("H1 SUMMARY")
-    print("=" * 70)
     print(f"{'Signal':15s} {'alpha_c':>8s} {'alpha_d':>8s} {'TFT':>12s} {'RA-TFT':>12s} {'Advantage':>12s}")
-    print("-" * 70)
     for signal in results:
         config = H1_CONFIGS[signal]
         tft_w = results[signal]['TFT']['wealth_mean']
@@ -34,17 +29,13 @@ def run_h1_experiment():
 
 
 def run_h2_experiment():
-    print("\n" + "=" * 70)
     print("H2: NETWORK THRESHOLD EFFECT")
-    print("=" * 70)
 
     h2_results = {}
 
     for threshold_name, config in H2_NETWORK_THRESHOLDS.items():
         K = config['network_threshold']
-        print(f"\n{'=' * 70}")
         print(f"Testing: {threshold_name} (K={K})")
-        print(f"{'=' * 70}")
 
         results = run_monte_carlo(config)
         aggregated = aggregate_monte_carlo_results(results)
@@ -56,11 +47,8 @@ def run_h2_experiment():
         winner = [name for name, s in aggregated.items() if s['wealth_mean'] == max_wealth][0]
         print(f"\n>>> Highest wealth: {winner} ({max_wealth:.2f})")
 
-    print("\n" + "=" * 70)
     print("H2 SUMMARY: Network Threshold vs Coalition Builder Performance")
-    print("=" * 70)
     print(f"{'Threshold':20s} {'K':>8s} {'CB Wealth':>12s} {'CB Survival':>15s} {'Highest Strategy':>20s}")
-    print("-" * 70)
 
     for threshold_name, config in H2_NETWORK_THRESHOLDS.items():
         if threshold_name in h2_results:
@@ -83,9 +71,7 @@ def run_h2_experiment():
 
 
 def run_h3_experiment():
-    print("\n" + "=" * 70)
     print("H3: WELFARE LEVELS UNDER HIGH NOISE")
-    print("=" * 70)
 
     h3_results = {}
 
@@ -112,12 +98,8 @@ def run_h3_experiment():
             allc = aggregated['AllC']
             print(f">>> AllC: Survival={allc['survival_mean']:.2%}, Wealth={allc['wealth_mean']:.2f}")
 
-    print("\n" + "=" * 70)
     print("H3 SUMMARY: Welfare Effects on Conditional Cooperators vs AllC")
-    print("=" * 70)
     print(f"{'Welfare':>10s} {'CC_Survival':>15s} {'CC_Wealth':>12s} {'AllC_Survival':>15s} {'AllC_Wealth':>12s}")
-    print("-" * 70)
-
     for config_name in sorted(h3_results.keys()):
         welfare = H3_CONFIGS[config_name]['welfare']
         data = h3_results[config_name]
@@ -140,17 +122,9 @@ def run_h3_experiment():
 
 
 def run_all_experiments():
-    print("\n" + "=" * 70)
-    print("RUNNING ALL EXPERIMENTS")
-    print("=" * 70)
-
     h1_results = run_h1_experiment()
     h2_results = run_h2_experiment()
     h3_results = run_h3_experiment()
-
-    print("\n" + "=" * 70)
-    print("ALL EXPERIMENTS COMPLETED")
-    print("=" * 70)
 
     return {
         'H1': h1_results,

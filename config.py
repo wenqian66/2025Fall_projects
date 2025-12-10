@@ -10,7 +10,7 @@ PAYOFF = {
 #2. default simulation and envir... parameters
 DEFAULT_PARAMS = {
     'num_rounds': 10000, # num of game rounds per simulation
-    'num_trials': 100, # num of simulation trails
+    'num_trials': 50, # num of simulation trails
     'player_counts': {
         'AllC': 10,
         'AllD': 10,
@@ -120,13 +120,13 @@ H2_NETWORK_THRESHOLDS = {
     },
 }
 
-H3_WELFARE_LEVELS = [0, 0.05, 0.10, 0.15, 0.20]
+H3_WELFARE_LEVELS = [0, 0.10, 0.20, 0.30, 0.40]
 
 H3_BASE_CONFIG = DEFAULT_PARAMS.copy()
 H3_BASE_CONFIG.update({
     'noise': 0.15,
     'num_rounds': 5000,
-    'num_trials': 100,
+    'num_trials': 50,
 })
 
 H3_CONFIGS = {
