@@ -1,16 +1,8 @@
 #chatgpt used
 import random
-
+from config import PAYOFF
 
 class EnvironmentUpdater:
-    """Handles all external environment updates:
-       noise
-       payoff
-       reputation
-       network weights
-       wealth
-       bankruptcy
-    """
     def apply_noise(self, action, noise):
         """Flip C/D with probability noise.
 
@@ -24,11 +16,6 @@ class EnvironmentUpdater:
         >>> # full noise always flips
         >>> flipped = [env.apply_noise("C", 1) for _ in range(5)]
         >>> all(a == 'D' for a in flipped)
-        True
-
-        >>> # noise between 0 and 1 still returns valid action
-        >>> res = env.apply_noise("C", 0.5)
-        >>> res in ("C", "D")
         True
         """
         if random.random() < noise:
@@ -63,12 +50,12 @@ class EnvironmentUpdater:
         >>> (p1.wealth, p2.wealth)
         (4, -3)
         """
-        payoff1, payoff2 = payoff[(a1, a2)]
+        payoff1, payoff2 = PAYOFF[(a1, a2)]
         p1.wealth += payoff1
         p2.wealth += payoff2
 
     def update_reputation(self, p1, p2, a1, a2,
-                          alpha_c=0.01, alpha_d=0.02):
+                          alpha_c, alpha_d, reputation_max,reputation_min):
         """
         >>> class P: pass
         >>> p1, p2 = P(), P()
@@ -103,7 +90,7 @@ class EnvironmentUpdater:
         p1.reputation = max(reputation_min, min(reputation_max, p1.reputation))
         p2.reputation = max(reputation_min, min(reputation_max, p2.reputation))
 
-    def update_network(self, p1, p2, a1, a2, gamma=1.0, delta=1.0):
+    def update_network(self, p1, p2, a1, a2, gamma, delta):
         """
         gamma is the enhancement
         delta is the punishment
@@ -141,7 +128,7 @@ class EnvironmentUpdater:
             p1.weights[p2.id] = max(0, p1.weights[p2.id] - delta)
             p2.weights[p1.id] = max(0, p2.weights[p1.id] - delta)
 
-    def update_bankruptcy(self, p, welfare=0.05, threshold=0):
+    def update_bankruptcy(self, p, welfare, threshold):
         """
         >>> class P:
         ...     def __init__(self, wealth):

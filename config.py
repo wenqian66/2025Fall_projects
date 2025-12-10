@@ -13,17 +13,17 @@ DEFAULT_PARAMS = {
     'players_per_strategy': 10,
 
     'initial_wealth': 10.0,
-    'broke_threshold': 0.0,
+    'wealth_threshold': 0.0,
     'welfare': 0.05,
 
-    'noise0': 0.05,
+    'noise': 0.05,
 
     #reputation sys
     'alpha_c': 0.01,
     'alpha_d': 0.02,
     'reputation_max': 1.0,
     'reputation_min': -1.0,
-    'reputation_threshold': 0.0,
+    'reputation_threshold': -0.1,
 
     #network sys
     'gamma': 1.0,

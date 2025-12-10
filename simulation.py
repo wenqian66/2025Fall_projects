@@ -1,7 +1,8 @@
 #chatgpt used
 
 import random
-from environment import EnvironmentUpdater, noise0
+from environment import EnvironmentUpdater
+from config import DEFAULT_PARAMS
 from player import (
     OpponentView, ALL_STRATEGIES,
     AllC, AllD, TFT, GRIM,
@@ -9,7 +10,7 @@ from player import (
 
 class PlayerWrapper:
     """
-    >>> p = PlayerWrapper(0, AllC, initial_wealth=100)
+    >>> p = PlayerWrapper(0, AllC, initial_wealth=100, noise=0.05)
     >>> p.id
     0
     >>> p.wealth
@@ -21,7 +22,7 @@ class PlayerWrapper:
     >>> p.noise
     0.05
     """
-    def __init__(self, player_id, strategy_class, initial_wealth=10, noise=noise0):
+    def __init__(self, player_id, strategy_class, initial_wealth=10, noise=0.05):
         self.id = player_id
         self.strategy = strategy_class()
         self.my_history = {}
@@ -63,19 +64,17 @@ class PlayerWrapper:
         self.opp_history[opponent_id].append(opp_action)
 
 
-def play_round(p1, p2, env,
-               alpha_c=0.01, alpha_d=0.02,
-               gamma=1.0, delta=1.0,
-               welfare=0.05, bankrupt_threshold=0.0):
+def play_round(p1, p2, env, params):
     """
     >>> env = EnvironmentUpdater()
+    >>> params = DEFAULT_PARAMS
     >>> p1 = PlayerWrapper(0, AllC, initial_wealth=10, noise=0)
     >>> p2 = PlayerWrapper(1, AllD, initial_wealth=10, noise=0)
-    >>> play_round(p1, p2, env)
+    >>> play_round(p1, p2, env, params)
     >>> p1.wealth
-    10.0
+    7
     >>> p2.wealth
-    11.0
+    14
     >>> p1.reputation
     0.01
     >>> p2.reputation
@@ -89,11 +88,14 @@ def play_round(p1, p2, env,
     a2 = p2.choose_action(p1, env)
     p1.record_actions(p2.id, a1, a2)
     p2.record_actions(p1.id, a2, a1)
+
     env.update_payoff(p1, p2, a1, a2)
-    env.update_reputation(p1, p2, a1, a2, alpha_c, alpha_d)
-    env.update_network(p1, p2, a1, a2, gamma, delta)
-    env.update_bankruptcy(p1, welfare, bankrupt_threshold)
-    env.update_bankruptcy(p2, welfare, bankrupt_threshold)
+    env.update_reputation(p1, p2, a1, a2,
+                          params['alpha_c'], params['alpha_d'],
+                          params['reputation_max'], params['reputation_min'])
+    env.update_network(p1, p2, a1, a2, params['gamma'], params['delta'])
+    env.update_bankruptcy(p1, params['welfare'], params['wealth_threshold'])
+    env.update_bankruptcy(p2, params['welfare'], params['wealth_threshold'])
 
 
 def random_pairing(players):
@@ -121,17 +123,16 @@ def random_pairing(players):
     return pairs
 
 
-def run_simulation(strategy_classes=None,
-                   rounds=10000,
-                   copies_per_strategy=5,
-                   initial_wealth=10,
-                   noise=noise0,
-                   alpha_c=0.01, alpha_d=0.02,
-                   gamma=1.0, delta=1.0,
-                   welfare=0.05,
-                   bankrupt_threshold=0.0):
-    if strategy_classes is None:
-        strategy_classes = ALL_STRATEGIES
+def run_simulation(params=None, **kwargs):
+    if params is None:
+        params = DEFAULT_PARAMS.copy()
+    params.update(kwargs)
+
+    strategy_classes = params.get('strategy_classes', ALL_STRATEGIES)
+    rounds = params['num_rounds']
+    copies_per_strategy = params['players_per_strategy']
+    initial_wealth = params['initial_wealth']
+    noise = params['noise']
 
     env = EnvironmentUpdater()
     players = []
@@ -142,21 +143,22 @@ def run_simulation(strategy_classes=None,
 
     for round_num in range(rounds):
         for p1, p2 in random_pairing(players):
-            play_round(p1, p2, env, alpha_c=alpha_c, alpha_d=alpha_d,
-                       gamma=gamma, delta=delta, welfare=welfare,
-                       bankrupt_threshold=bankrupt_threshold)
+            play_round(p1, p2, env, params)
     return players
 
 
-def run_monte_carlo(n_trials=1000, **kwargs):
+def run_monte_carlo(params=None, **kwargs):
+    if params is None:
+        params = DEFAULT_PARAMS.copy()
+    params.update(kwargs)
+    num_trials = params['num_trials']
     results = []
-    for trial in range(n_trials):
+    for trial in range(num_trials):
         if trial % 100 == 0:
-            print(f"Trial {trial}/{n_trials}")
-        players = run_simulation(**kwargs)
+            print(f"Trial {trial}/{num_trials}")
+        players = run_simulation(params)
         results.append(analyze_trial(players))
     return results
-
 
 def analyze_trial(players):
     """
@@ -192,15 +194,15 @@ def analyze_trial(players):
         by_strategy[strategy_name]['total_wealth'] += p.wealth
         by_strategy[strategy_name]['final_wealth'].append(p.wealth)
 
-    for strategy_name in by_strategy:
-        data = by_strategy[strategy_name]
-        data['survival_rate'] = data['survived'] / data['total']
-        data['avg_wealth'] = data['total_wealth'] / data['total']
+    # for strategy_name in by_strategy:
+    #     data = by_strategy[strategy_name]
+    #     data['survival_rate'] = data['survived'] / data['total']
+    #     data['avg_wealth'] = data['total_wealth'] / data['total']
     return by_strategy
 
-
 if __name__ == "__main__":
-    players = run_simulation(rounds=1000)
+    players = run_simulation(num_rounds=5000)
     result = analyze_trial(players)
-    for strategy, stats in result.items():
-        print(f"{strategy:20s}: Survival={stats['survival_rate']:.2%}, Avg Wealth={stats['avg_wealth']:.2f}")
+    print(result)
+    # for strategy, stats in result.items():
+        # print(f"{strategy:20s}: Survival={stats['survival_rate']:.2%}, Avg Wealth={stats['avg_wealth']:.2f}")
