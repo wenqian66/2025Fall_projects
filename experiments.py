@@ -1,149 +1,163 @@
-import numpy as np
-import pandas as pd
-from simulation import run_monte_carlo, run_simulation
-from player import TFT, ReputationAwareTFT
+from config import H1_CONFIGS, H2_NETWORK_THRESHOLDS, H3_CONFIGS, H3_WELFARE_LEVELS
+from simulation import run_monte_carlo, aggregate_monte_carlo_results
+from utils import print_results_with_ci
 
 
 
-def experiment_h1():
-    print("=" * 60)
-    print("H1: RA-TFT outperforms TFT in average payoff")
-    print("=" * 60)
+def run_h1_experiment():
+    print("=" * 70)
+    print("H1: TFT vs RA-TFT across reputation signal strengths")
+    print("=" * 70)
 
-    results = run_monte_carlo(
-        n_trials=1000,
-        strategy_classes=[TFT, ReputationAwareTFT],
-        copies_per_strategy=5,
-        rounds=10000,
-        noise=0.05
-    )
+    results = {}
+    for signal_name, config in H1_CONFIGS.items():
+        print(f"\n{signal_name}: alpha_c={config['alpha_c']}, alpha_d={config['alpha_d']}")
+        res = run_monte_carlo(config)
+        agg = aggregate_monte_carlo_results(res)
+        results[signal_name] = agg
+        print_results_with_ci(agg)
 
-    summary = aggregate_monte_carlo(results)
-    print(summary)
-    summary.to_csv('h1_results.csv', index=False)
+    print("\n" + "=" * 70)
+    print("H1 SUMMARY")
+    print("=" * 70)
+    print(f"{'Signal':15s} {'alpha_c':>8s} {'alpha_d':>8s} {'TFT':>12s} {'RA-TFT':>12s} {'Advantage':>12s}")
+    print("-" * 70)
+    for signal in results:
+        config = H1_CONFIGS[signal]
+        tft_w = results[signal]['TFT']['wealth_mean']
+        ratft_w = results[signal]['Reputation Aware TFT']['wealth_mean']
+        adv = (ratft_w - tft_w) / tft_w * 100
+        print(
+            f"{signal:15s} {config['alpha_c']:>8.3f} {config['alpha_d']:>8.3f} {tft_w:>12.2f} {ratft_w:>12.2f} {adv:>11.1f}%")
 
-    tft_wealth = summary[summary['strategy'] == 'TFT']['wealth_mean'].values[0]
-    ratft_wealth = summary[summary['strategy'] == 'Reputation Aware TFT']['wealth_mean'].values[0]
-    print(f"\nH1 supported: {ratft_wealth > tft_wealth}")
-
-    return summary
-
-
-def experiment_h2():
-    print("=" * 60)
-    print("H2: Coalition Builder achieves highest average payoff")
-    print("=" * 60)
-
-    results = run_monte_carlo(
-        n_trials=1000,
-        rounds=10000,
-        noise=0.05
-    )
-
-    summary = aggregate_monte_carlo(results)
-    summary = summary.sort_values('wealth_mean', ascending=False)
-    print(summary)
-    summary.to_csv('h2_results.csv', index=False)
-
-    top_strategy = summary.iloc[0]['strategy']
-    print(f"\nH2 supported: {top_strategy == 'Coalition Builder'}")
-
-    return summary
+    return results
 
 
-def calculate_h3_metrics(players):
-    conditional_strategies = ['TFT', 'GTFT', 'Grim']
+def run_h2_experiment():
+    print("\n" + "=" * 70)
+    print("H2: NETWORK THRESHOLD EFFECT")
+    print("=" * 70)
 
-    conditional_players = [p for p in players if p.strategy.name in conditional_strategies]
-    cond_survived = sum(1 for p in conditional_players if not p.bankrupt)
-    cond_survival_rate = cond_survived / len(conditional_players) if conditional_players else 0
+    h2_results = {}
 
-    allc_players = [p for p in players if p.strategy.name == 'AllC']
-    allc_survived = sum(1 for p in allc_players if not p.bankrupt)
-    allc_survival_rate = allc_survived / len(allc_players) if allc_players else 0
+    for threshold_name, config in H2_NETWORK_THRESHOLDS.items():
+        K = config['network_threshold']
+        print(f"\n{'=' * 70}")
+        print(f"Testing: {threshold_name} (K={K})")
+        print(f"{'=' * 70}")
 
-    allc_exploitation_count = 0
-    allc_total_interactions = 0
-    for p in allc_players:
-        for opp_id, actions in p.opp_history.items():
-            opp = next((o for o in players if o.id == opp_id), None)
-            if opp:
-                if opp.strategy.name == 'AllD':
-                    allc_exploitation_count += len(actions)
-                allc_total_interactions += len(actions)
+        results = run_monte_carlo(config)
+        aggregated = aggregate_monte_carlo_results(results)
+        h2_results[threshold_name] = aggregated
 
-    exploitation_rate = allc_exploitation_count / allc_total_interactions if allc_total_interactions > 0 else 0
+        print_results_with_ci(aggregated)
 
-    survivors = [p for p in players if not p.bankrupt]
-    avg_survivor_wealth = np.mean([p.wealth for p in survivors]) if survivors else 0
+        max_wealth = max(s['wealth_mean'] for s in aggregated.values())
+        winner = [name for name, s in aggregated.items() if s['wealth_mean'] == max_wealth][0]
+        print(f"\n>>> Highest wealth: {winner} ({max_wealth:.2f})")
+
+    print("\n" + "=" * 70)
+    print("H2 SUMMARY: Network Threshold vs Coalition Builder Performance")
+    print("=" * 70)
+    print(f"{'Threshold':20s} {'K':>8s} {'CB Wealth':>12s} {'CB Survival':>15s} {'Highest Strategy':>20s}")
+    print("-" * 70)
+
+    for threshold_name, config in H2_NETWORK_THRESHOLDS.items():
+        if threshold_name in h2_results:
+            data = h2_results[threshold_name]
+            K = config['network_threshold']
+
+            if 'Coalition Builder' in data:
+                cb_wealth = data['Coalition Builder']['wealth_mean']
+                cb_survival = data['Coalition Builder']['survival_mean']
+            else:
+                cb_wealth = 0
+                cb_survival = 0
+
+            max_wealth = max(s['wealth_mean'] for s in data.values())
+            winner = [name for name, s in data.items() if s['wealth_mean'] == max_wealth][0]
+
+            print(f"{threshold_name:20s} {K:>8.1f} {cb_wealth:>12.2f} {cb_survival:>14.2%} {winner:>20s}")
+
+    return h2_results
+
+
+def run_h3_experiment():
+    print("\n" + "=" * 70)
+    print("H3: WELFARE LEVELS UNDER HIGH NOISE")
+    print("=" * 70)
+
+    h3_results = {}
+
+    for config_name, config in H3_CONFIGS.items():
+        welfare = config['welfare']
+        print(f"\n{'=' * 70}")
+        print(f"Testing: {config_name} (welfare={welfare:.2f}, noise={config['noise']})")
+        print(f"{'=' * 70}")
+
+        results = run_monte_carlo(config)
+        aggregated = aggregate_monte_carlo_results(results)
+        h3_results[config_name] = aggregated
+
+        print_results_with_ci(aggregated)
+
+        cond_coop = ['TFT', 'GTFT', 'Grim']
+        cond_coop_data = [aggregated[s] for s in cond_coop if s in aggregated]
+        if cond_coop_data:
+            avg_survival = sum(s['survival_mean'] for s in cond_coop_data) / len(cond_coop_data)
+            avg_wealth = sum(s['wealth_mean'] for s in cond_coop_data) / len(cond_coop_data)
+            print(f"\n>>> Conditional Cooperators: Survival={avg_survival:.2%}, Wealth={avg_wealth:.2f}")
+
+        if 'AllC' in aggregated:
+            allc = aggregated['AllC']
+            print(f">>> AllC: Survival={allc['survival_mean']:.2%}, Wealth={allc['wealth_mean']:.2f}")
+
+    print("\n" + "=" * 70)
+    print("H3 SUMMARY: Welfare Effects on Conditional Cooperators vs AllC")
+    print("=" * 70)
+    print(f"{'Welfare':>10s} {'CC_Survival':>15s} {'CC_Wealth':>12s} {'AllC_Survival':>15s} {'AllC_Wealth':>12s}")
+    print("-" * 70)
+
+    for config_name in sorted(h3_results.keys()):
+        welfare = H3_CONFIGS[config_name]['welfare']
+        data = h3_results[config_name]
+
+        cond_coop = ['TFT', 'GTFT', 'Grim']
+        cond_coop_data = [data[s] for s in cond_coop if s in data]
+        if cond_coop_data:
+            cc_survival = sum(s['survival_mean'] for s in cond_coop_data) / len(cond_coop_data)
+            cc_wealth = sum(s['wealth_mean'] for s in cond_coop_data) / len(cond_coop_data)
+        else:
+            cc_survival = 0
+            cc_wealth = 0
+
+        allc_survival = data['AllC']['survival_mean'] if 'AllC' in data else 0
+        allc_wealth = data['AllC']['wealth_mean'] if 'AllC' in data else 0
+
+        print(f"{welfare:>10.2f} {cc_survival:>14.2%} {cc_wealth:>12.2f} {allc_survival:>14.2%} {allc_wealth:>12.2f}")
+
+    return h3_results
+
+
+def run_all_experiments():
+    print("\n" + "=" * 70)
+    print("RUNNING ALL EXPERIMENTS")
+    print("=" * 70)
+
+    h1_results = run_h1_experiment()
+    h2_results = run_h2_experiment()
+    h3_results = run_h3_experiment()
+
+    print("\n" + "=" * 70)
+    print("ALL EXPERIMENTS COMPLETED")
+    print("=" * 70)
 
     return {
-        'cond_survival_rate': cond_survival_rate,
-        'allc_survival_rate': allc_survival_rate,
-        'exploitation_rate': exploitation_rate,
-        'avg_survivor_wealth': avg_survivor_wealth
+        'H1': h1_results,
+        'H2': h2_results,
+        'H3': h3_results,
     }
 
 
-def experiment_h3():
-    print("=" * 60)
-    print("H3: Welfare paradox under high noise")
-    print("=" * 60)
-
-    welfare_levels = [0, 0.05, 0.10, 0.15, 0.20]
-    all_results = []
-
-    for welfare in welfare_levels:
-        print(f"\nWelfare={welfare}")
-
-        trial_metrics = []
-        for trial in range(100):
-            if trial % 20 == 0:
-                print(f"  Trial {trial}/100")
-
-            players = run_simulation(
-                rounds=5000,
-                noise=0.15,
-                welfare=welfare
-            )
-
-            metrics = calculate_h3_metrics(players)
-            trial_metrics.append(metrics)
-
-        df_trials = pd.DataFrame(trial_metrics)
-        welfare_summary = {
-            'welfare': welfare,
-            'cond_survival_mean': df_trials['cond_survival_rate'].mean(),
-            'cond_survival_std': df_trials['cond_survival_rate'].std(),
-            'allc_survival_mean': df_trials['allc_survival_rate'].mean(),
-            'allc_survival_std': df_trials['allc_survival_rate'].std(),
-            'exploitation_mean': df_trials['exploitation_rate'].mean(),
-            'exploitation_std': df_trials['exploitation_rate'].std(),
-            'avg_wealth_mean': df_trials['avg_survivor_wealth'].mean(),
-            'avg_wealth_std': df_trials['avg_survivor_wealth'].std()
-        }
-        all_results.append(welfare_summary)
-
-    df_results = pd.DataFrame(all_results)
-    print("\n" + "=" * 60)
-    print(df_results)
-    df_results.to_csv('h3_results.csv', index=False)
-
-    optimal_idx = df_results['cond_survival_mean'].idxmax()
-    optimal_welfare = df_results.loc[optimal_idx, 'welfare']
-    print(f"\nOptimal welfare for conditional cooperators: {optimal_welfare}")
-
-    high_welfare = df_results[df_results['welfare'] >= 0.15]
-    if not high_welfare.empty:
-        high_welfare_exploitation = high_welfare['exploitation_mean'].mean()
-        print(f"High welfare (≥0.15) exploitation rate: {high_welfare_exploitation:.2%}")
-        print(f"H3 supported: {optimal_welfare == 0.05 and high_welfare_exploitation > 0.6}")
-
-    return df_results
-
-
 if __name__ == "__main__":
-    h1_results = experiment_h1()
-    h2_results = experiment_h2()
-    h3_results = experiment_h3()
-    print("\nAll experiments completed")
+    all_results = run_all_experiments()

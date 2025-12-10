@@ -100,7 +100,7 @@ class RAND:
 
 class ReputationAwareTFT:
     """
-    Reputation-based strategy: uses GTFT for high rep, GRIM for low rep, TFT for medium
+    Reputation-based strategy: uses GTFT for high rep, Defect for low rep, TFT for medium
     >>> ratft = ReputationAwareTFT(reputation_threshold=-0.5, high_rep_threshold=0.3)
     >>> opp1 = OpponentView([])
     >>> opp1._reputation = 0.0
@@ -137,7 +137,7 @@ class ReputationAwareTFT:
         if opp_reputation > self.high_rep_threshold:
             return self.gtft.strategy(opponent)
         elif opp_reputation < self.reputation_threshold:
-            return self.grim.strategy(opponent)
+            return "D"
         else:
             return self.tft.strategy(opponent)
 

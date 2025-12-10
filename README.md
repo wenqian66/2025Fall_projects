@@ -207,7 +207,7 @@ Confirm B1-B5 using baseline strategies only (sanity check, not contribution).
 standard TFT.
 
 **H2**: When reputation and network information are available, Coalition 
-Builder will achieve the highest average payoff among all strategies(8).
+Builder will achieve best among all strategies(8).
 
 **H3**: Moderate welfare (β=0.05) helps conditional cooperators survive high-noise(ε=0.15) 
 environments, but excessive welfare (β≥0.15) enables unconditional cooperators 
