@@ -144,7 +144,7 @@ class ReputationAwareTFT:
 class CoalitionBuilder:
     """
     Cooperates with trusted partners (network weight >= K)
-    Defects against others
+    TFT against others
     >>> cb = CoalitionBuilder(K=10)
     >>> opp = OpponentView([])
     >>> opp._weight = 5

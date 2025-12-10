@@ -28,7 +28,7 @@ This project critiques and substantially extends prior open-source Prisoner's Di
 * New strategies (RA-TFT, Coalition Builder) that exploit 
   environmental information through **selective cooperation**
 
-Players interact over 10,000 rounds. Monte Carlo trials evaluate how environmental mechanisms alter strategic equilibria beyond classical PD results.
+Players interact over 10,000(default) rounds. Monte Carlo trials evaluate how environmental mechanisms alter strategic equilibria beyond classical PD results.
 
 ---
 
@@ -36,8 +36,8 @@ Players interact over 10,000 rounds. Monte Carlo trials evaluate how environment
 
 |               | B Refrain (C) | B Steal (D) |
 | ------------- |---------------|-------------|
-| A Refrain (C) | (3, 3)        | (-3, 4)     |
-| A Steal (D)   | (4, -3)       | (-2, -2)    |
+| A Refrain (C) | (2, 2)        | (-5, 6)     |
+| A Steal (D)   | (6, -5)       | (-4, -4)    |
 
 The matrix follows the classcial Prisoner’s Dilemma problem requirements:   $T > R > P > S \quad \text{and} \quad 2R > T + S$
 
@@ -49,21 +49,9 @@ The matrix follows the classcial Prisoner’s Dilemma problem requirements:   $T
 1. Two players paired for T rounds (default: 10,000)
 2. Each round: choose Refrain (C) or Steal (D)
 3. Payoffs follow base matrix
-4. Players observe opponent history and reputation
+4. Players observe opponent history(local) and reputation(global)
 5. Strategies fixed within simulation
 
-#### **Matching Algorithm**
-**Pure random pairing via random.shuffle()**, each round:
-1. Shuffle all active (non-bankrupt) players
-2. Pair adjacent players: (players[0], players[1]), (players[2], players[3])...
-3. Unpaired player (if odd number) sits out that round
-
-**Critical Design Choice:**
-- Reputation and network are **information only**
-- Matching is **not** affected by reputation/network weights
-- Assortative matching emerges through **strategic behavior** 
-  (Coalition Builder selectively cooperates), not system-imposed 
-  preferential pairing
 
 ### **New Environmental Rules**
 
@@ -74,7 +62,7 @@ $$r_i \leftarrow \max(r_{\min}, r_i - \alpha_d) \quad \text{after defection}$$
 
 - **Observable by all players**
 - **Does not affect matching probability**
-- **Only RA-TFT strategy use this information, others ignore it (TFT, AllC, AllD)**
+- **Only RA-TFT strategy use this information, others ignore it (TFT, AllC, AllD, etc)**
 
 **7. Network-Based Information**
 
@@ -97,9 +85,22 @@ If $W_i < W_{\text{threshold}}$, player exits pool temporarily.
 
 $$W_i \leftarrow W_i + \beta \quad \text{if } W_i < W_{\text{threshold}}$$
 
-where $\beta = 0.05$ (fixed welfare per round).
+where $\beta = 0.05$ (fixed welfare per round, 0.05 as defaul).
 
 Mirrors real-world safety nets (unemployment insurance, welfare).
+
+#### **Matching Algorithm**
+**Pure random pairing via random.shuffle()**, each round:
+1. Shuffle all active (non-bankrupt) players
+2. Pair adjacent players: (players[0], players[1]), (players[2], players[3])...
+3. Unpaired player (if odd number) sits out that round
+
+**Critical Design Choice:**
+1. Reputation and network are **information only**
+2. Matching is **not** affected by reputation/network weights
+3. Assortative matching emerges through **strategic behavior** 
+  (Coalition Builder selectively cooperates), not system-imposed 
+  preferential pairing
 
 ---
 
@@ -118,14 +119,16 @@ Mirrors real-world safety nets (unemployment insurance, welfare).
 **7. Reputation-Aware TFT (RA-TFT)**
 
 $$
-\text{Action} = 
+\text{Action} =
 \begin{cases}
-C, & \text{if } r_j > r_{\text{threshold}} \\
-D, & \text{if } r_j \leq r_{\text{threshold}} \text{ or opponent defected last round}
+\text{GTFT}, & \text{if } r_j > r_{\text{threshold1}}, \\[6pt]
+\text{TFT},  & \text{if } r_{\text{threshold2}} < r_j \le r_{\text{threshold1}}, \\[6pt]
+D,           & \text{if } r_j \le r_{\text{threshold2}} 
 \end{cases}
 $$
 
-Integrates reputation into TFT logic. RA-TFT plays TFT with opponents who have high reputation; otherwise, it defects.
+
+Integrates reputation into TFT logic. 
 
 **8. Coalition Builder**
 
@@ -189,8 +192,6 @@ Components:
 **Classical PD Verification:**
 Confirm B1-B5 using baseline strategies only (sanity check, not contribution).
 
-### **Phase 3: Experiments**
-
 **Baseline Hypotheses (Well-Established, Verification Only)**
 
 **B1.** GRIM optimal in random pairing  
@@ -199,6 +200,8 @@ Confirm B1-B5 using baseline strategies only (sanity check, not contribution).
 **B4.** AllD exploits naive cooperators early  
 **B5.** Higher cooperation reward → more cooperation  
 
+### **Phase 3: Experiments**
+
 ---
 
 **Novel Hypotheses (Core Contributions)**
@@ -206,15 +209,28 @@ Confirm B1-B5 using baseline strategies only (sanity check, not contribution).
 **H1**: When reputation information is available, RA-TFT will outperform 
 standard TFT.
 
+$$
+(\alpha_c,\,\alpha_d)\in
+\left\{
+(0,0),\;
+(0.005,\,0.01),\;
+(0.02,\,0.04),\;
+(0.05,\,0.10)
+\right\}.
+$$
+
+
 **H2**: When reputation and network information are available, Coalition 
 Builder will achieve best among all strategies(8).
 
+$$
+K \in {3,5,8,12}.$$
 **H3**: Moderate welfare (β=0.05) helps conditional cooperators survive high-noise(ε=0.15) 
 environments, but excessive welfare (β≥0.15) enables unconditional cooperators 
 (AllC) to persist despite chronic exploitation, benefiting defectors (AllD) 
 and reducing mutual cooperation rates.
 
-*Test:* β = 0, 0.05, 0.10, 0.15, 0.20 under high noise (ε=0.15)
+*Test:* β = 0, 0.10, 0.20, 0.30, 0.40 under high noise (ε=0.15)
 
 *Metrics (at round 5000):*
 - Conditional cooperator survival (TFT, GTFT, GRIM)
