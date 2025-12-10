@@ -180,13 +180,13 @@ class CoalitionBuilder:
         return self.tft.strategy(opponent)
 
 
-ALL_STRATEGIES = [
-    AllC,
-    AllD,
-    TFT,
-    GTFT,
-    GRIM,
-    RAND,
-    ReputationAwareTFT,
-    CoalitionBuilder
-]
+STRATEGY_MAP = {
+    'AllC': AllC,
+    'AllD': AllD,
+    'TFT': TFT,
+    'GTFT': GTFT,
+    'GRIM': GRIM,
+    'RAND': RAND,
+    'ReputationAwareTFT': ReputationAwareTFT,
+    'CoalitionBuilder': CoalitionBuilder,
+}

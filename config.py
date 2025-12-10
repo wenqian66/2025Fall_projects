@@ -10,7 +10,16 @@ PAYOFF = {
 DEFAULT_PARAMS = {
     'num_rounds': 10000, # num of game rounds per simulation
     'num_trials': 1000, # num of simulation trails
-    'players_per_strategy': 10,
+    'player_counts': {
+        'AllC': 10,
+        'AllD': 10,
+        'TFT': 10,
+        'GTFT': 10,
+        'GRIM': 10,
+        'RAND': 10,
+        'ReputationAwareTFT': 10,
+        'CoalitionBuilder': 10,
+    },
 
     'initial_wealth': 10.0,
     'wealth_threshold': 0.0,

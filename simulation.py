@@ -4,10 +4,12 @@ import random
 from environment import EnvironmentUpdater
 from config import DEFAULT_PARAMS
 from player import (
-    OpponentView, ALL_STRATEGIES,
+    OpponentView,
     AllC, AllD, TFT, GRIM,
 )
 from utils import _prepare_params
+from player import STRATEGY_MAP
+
 class PlayerWrapper:
     """
     >>> p = PlayerWrapper(0, AllC, initial_wealth=100, noise=0.05)
@@ -126,18 +128,20 @@ def random_pairing(players):
 def run_simulation(params=None, **kwargs):
     params = _prepare_params(params, kwargs)
 
-    strategy_classes = params.get('strategy_classes', ALL_STRATEGIES)
+    player_counts = params['player_counts']
     rounds = params['num_rounds']
-    copies_per_strategy = params['players_per_strategy']
     initial_wealth = params['initial_wealth']
     noise = params['noise']
 
     env = EnvironmentUpdater()
     players = []
-    for sid, strategy_class in enumerate(strategy_classes):
-        for i in range(copies_per_strategy):
-            player_id = sid * copies_per_strategy + i
+    player_id = 0
+
+    for strategy_name, count in player_counts.items():
+        strategy_class = STRATEGY_MAP[strategy_name]
+        for _ in range(count):
             players.append(PlayerWrapper(player_id, strategy_class, initial_wealth, noise))
+            player_id += 1
 
     for round_num in range(rounds):
         for p1, p2 in random_pairing(players):
