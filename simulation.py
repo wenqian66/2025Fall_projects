@@ -7,8 +7,9 @@ from player import (
     OpponentView,
     AllC, AllD, TFT, GRIM,
 )
-from utils import _prepare_params
+from utils import _prepare_params, print_results_with_ci
 from player import STRATEGY_MAP
+import numpy as np
 
 class PlayerWrapper:
     """
@@ -213,8 +214,11 @@ def aggregate_monte_carlo_results(results):
 
     return {
         strategy: {
-            'avg_survival_rate': sum(data['survival_rates']) / len(data['survival_rates']),
-            'avg_wealth': sum(data['avg_wealths']) / len(data['avg_wealths'])
+            'survival_mean': np.mean(data['survival_rates']),
+            'survival_std': np.std(data['survival_rates']),
+            'wealth_mean': np.mean(data['avg_wealths']),
+            'wealth_std': np.std(data['avg_wealths']),
+            'n_trials': len(data['survival_rates'])
         }
         for strategy, data in aggregated.items()
     }
@@ -227,5 +231,4 @@ if __name__ == "__main__":
     results = run_monte_carlo(test_params)
     aggregated = aggregate_monte_carlo_results(results)
 
-    for strategy, stats in aggregated.items():
-        print(f"{strategy:20s}: Survival={stats['avg_survival_rate']:.2%}, Avg Wealth={stats['avg_wealth']:.2f}")
+    print_results_with_ci(aggregated)

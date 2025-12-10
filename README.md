@@ -204,7 +204,7 @@ Confirm B1-B5 using baseline strategies only (sanity check, not contribution).
 **Novel Hypotheses (Core Contributions)**
 
 **H1**: When reputation information is available, RA-TFT will outperform 
-standard TFT in average payoff.
+standard TFT.
 
 **H2**: When reputation and network information are available, Coalition 
 Builder will achieve the highest average payoff among all strategies(8).

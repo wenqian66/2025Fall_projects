@@ -4,23 +4,6 @@ from simulation import run_monte_carlo, run_simulation
 from player import TFT, ReputationAwareTFT
 
 
-def aggregate_monte_carlo(results):
-    df_list = []
-    for trial in results:
-        for strategy, stats in trial.items():
-            df_list.append({
-                'strategy': strategy,
-                'survival_rate': stats['survival_rate'],
-                'avg_wealth': stats['avg_wealth']
-            })
-    df = pd.DataFrame(df_list)
-    summary = df.groupby('strategy').agg({
-        'survival_rate': ['mean', 'std'],
-        'avg_wealth': ['mean', 'std']
-    }).reset_index()
-    summary.columns = ['strategy', 'survival_mean', 'survival_std', 'wealth_mean', 'wealth_std']
-    return summary
-
 
 def experiment_h1():
     print("=" * 60)
