@@ -8,7 +8,7 @@ Wenqian Chen
 Type I: Formal Critique and Improvement of a Published Data Analysis
 
 To reproduce the results, run **experiment.py** and **validation.py**.
-The data structures and design details are documented in datastructure.md.
+The data structures and design details are documented in code_structure.md.
 
 **Note**: I removed the welfare system design from the final model. A full welfare mechanism is hard to define and implement in a simple way, and would add significant complexity to both analysis and algorithm design. 
 Instead, we keep a basic elimination rule: players with negative wealth are removed from the game.
