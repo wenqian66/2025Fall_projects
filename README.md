@@ -1,5 +1,5 @@
 # **Steal or Refrain: A Monte Carlo Simulation of Repeated Cooperation and Defection**
-This game is a background base on 变形 of the prisonnoer dillema case cacitation 3
+This game is based on a modified version of the Prisoner’s Dilemma (see citation [3]).
 
 **Team Member:**
 Wenqian Chen
@@ -7,11 +7,24 @@ Wenqian Chen
 **Project Type:**
 Type I: Formal Critique and Improvement of a Published Data Analysis
 
+To reproduce the results, run **experiment.py** and **validation.py**.
+The data structures and design details are documented in datastructure.md.
+
+**Note**: I removed the welfare system design from the final model. A full welfare mechanism is hard to define and implement in a simple way, and would add significant complexity to both analysis and algorithm design. 
+Instead, we keep a basic elimination rule: players with negative wealth are removed from the game.
+
+Papers cited in [7–10] mainly provide the theoretical motivation for our design rather than direct code implementations. We do not copy algorithms from these works.
+
+For example, these papers emphasize that mutual cooperation strengthens long-term relationships, while unilateral defection is often more damaging than mutual defection.
+In our model, this idea is implemented at the system level through the network update rules.
+Specifically, network strength increases only when both players cooperate, while any outcome involving defection reduces trust symmetrically.
+Many aspects of our environment design are inspired by the theoretical insights from these papers.
 ---
 
 ## **Project Description**
 
-This project critiques and substantially extends prior open-source Prisoner's Dilemma simulations. Consider citation 4 and 6, I also
+This project critiques and substantially extends prior open-source Prisoner’s Dilemma simulations (see citations [4] and [6]).
+
 **Limitations of existing simulations:**
 * Round-robin pairing 
 * Simplified noise models
@@ -21,11 +34,10 @@ This project critiques and substantially extends prior open-source Prisoner's Di
 **This project adds:**
 * Reputation system tracking cooperation history (information only)
 * Network weights capturing pairwise relationship strength
-* Wealth dynamics with bankruptcy and welfare recovery
-* New strategies (RA-TFT, Coalition Builder) that exploit 
-  environmental information through **selective cooperation**
+* Wealth dynamics with bankruptcy.
+* New strategies (RA-TFT, Coalition Builder) that exploit environmental information through **selective cooperation**
 
-Players interact over 1000(default) rounds. 50 trials Monte Carlo trials evaluate how environmental mechanisms alter strategic equilibria beyond classical PD results.
+Players interact over 1000 (default) rounds. We run 50 Monte Carlo trials to evaluate how environmental mechanisms alter outcomes beyond classical Prisoner’s Dilemma results.
 
 ---
 
@@ -36,7 +48,9 @@ Players interact over 1000(default) rounds. 50 trials Monte Carlo trials evaluat
 | A Refrain (C) | (2, 2)        | (-5, 6)     |
 | A Steal (D)   | (6, -5)       | (-4, -4)    |
 
-The matrix follows the classcial Prisoner’s Dilemma problem requirements:   $T > R > P > S \quad \text{and} \quad 2R > T + S$ where ... this negative matrix is inspired by the citation 5, where it use the power war model that a small 小程序mimic the process
+The matrix follows the classcial Prisoner’s Dilemma problem requirements:   $T > R > P > S \quad \text{and} \quad 2R > T + S$ 
+
+The use of negative payoffs is inspired by citation [5], which introduces negative outcomes in a power-based Prisoner’s Dilemma setting. In contrast, we use a fixed payoff matrix, and our main focus is on adding two systems: reputation awareness and network memory.
 
 ---
 
@@ -76,9 +90,8 @@ $$w(i,j) \leftarrow \max(0, w(i,j) - \delta) \quad \text{after defection}$$
 
 $$W_i \leftarrow W_i + \pi_i$$
 
-If $W_i < W_{\text{threshold}}$, player exits pool temporarily.
+If $W_i < W_{\text{threshold}}$, the player is permanently removed from the game.
 
-Note I delete the design of the welfare since the completed process can't be ... in some easy design like hard to studties and design the algiritm because the welfare sys is super complted... but we still ...broke player be kicked out of the game
 #### **Matching Algorithm**
 
 **Pure random pairing via random.shuffle()**, each round:
@@ -118,11 +131,11 @@ D,           & \text{if } r_j \le r_{\text{threshold2}}
 \end{cases}
 $$
 
-REMINDER:
-        GTFT means that coorperate first, if face betry, then probability p to coopertate and (1-p) do TFT
-        TFT means that Coorperate first, then copy opponent's previous action
-        (like if its opponent choose coorperate, they coorprate, if opponent choose betry/defect, then they also choose betry/defect)
-        Reputation score is accumulated from a player;s previous behaviors
+**REMINDER**:
+ 
+- GTFT means that coorperate first, if face betry, then probability p to coopertate and (1-p) do TFT
+- TFT means that Coorperate first, then copy opponent's previous action (like if its opponent choose coorperate, they coorprate, if opponent choose betry/defect, then they also choose betry/defect)
+- Reputation score is accumulated from a player;s previous behaviors
 
 Integrates reputation into TFT logic. 
 
@@ -148,13 +161,12 @@ $$
 * Player pairing (random.shuffle() each round)
 * Action noise ε (move flip probability)
   - Default: ε = 0.05 (5% error rate)
-  - High-noise treatment (H3): ε = 0.15
   - Models miscommunication/signal errors
 
 ## **Controlled Variables**
 * Payoff matrix
-* Initial wealth W₀ = 10.0 (equal start for all players)
-* Monte Carlo trials (N = 1000)
+* Initial wealth W₀ = 20.0 (equal start for all players)
+* Monte Carlo trials (N = 100/50)
 * GTFT forgiveness p
 * Reputation weights $\alpha_c, \alpha_d$
 * Network weights $\gamma, \delta$
@@ -171,17 +183,47 @@ Components:
 * Base PD model (Steal/Refrain)
 * Reputation system
 * Network matching
-* Wealth/bankruptcy mechanics
+* bankruptcy mechanics
 
 ### **Phase 2: Validation**
+**remainder**
+- **AllC**: Always cooperate
+- **AllD**: Always defect
+- **TFT**: Tit-for-tat, start by cooperating, then mirror opponent's last move
 
-**vanity:**
+**Sanity Checks:**
+* **All players use the same strategy**
 
+  - AllC (everyone cooperates): high average wealth, no bankruptcies
+  - AllD (everyone defects): near-zero or negative wealth, many bankruptcies
+    These results match standard Prisoner’s Dilemma intuition.
 
+* **Zero rounds**
+
+  - When the number of rounds is set to zero, all players keep their initial wealth and no one goes bankrupt.
+    This confirms the simulation does not introduce unintended side effects.
+
+* **Extreme noise**
+
+  - With no noise, TFT achieves high wealth.
+  - With full noise, TFT collapses and behaves close to random play.
+    This confirms that the noise mechanism is implemented correctly.
+
+  
 
 **convergence**
-![Convergence](convergence.png)
-  
+
+To ensure that our results are not driven by randomness in a single run, we run the simulation repeatedly 100 times and track the cumulative average wealth and survival rate.
+
+
+The figure below shows that:
+
+* Wealth and survival rates stabilize after enough runs.
+* TFT consistently outperforms AllC in survival, while AllD collapses quickly.
+* The system converges to stable values, indicating that our experimental results are reliable.
+
+
+![Convergence](figures/convergence.png)
 
 ### **Phase 3: Experiments**
 
@@ -277,16 +319,16 @@ This partially rejects Hypothesis 3, because our system is still built on condit
 * 4. [https://github.com/Axelrod-Python/Axelrod](https://github.com/Axelrod-Python/Axelrod)
 * 5. [https://github.com/josephius/power](https://github.com/josephius/power)
 * 6. [https://github.com/jenna-jordan/Prisoners-Dilemma](https://github.com/jenna-jordan/Prisoners-Dilemma)
-* Bergstrom, T. (2003). *The Algebra of Assortative Encounters and the Evolution of Cooperation*.
+* 7. Bergstrom, T. (2003). *The Algebra of Assortative Encounters and the Evolution of Cooperation*.
   UC Santa Barbara, Department of Economics.  
   Retrieved from https://escholarship.org/uc/item/03f6s9jt
-* Nowak, M. A., & Sigmund, K. (1998). *Evolution of indirect reciprocity by image scoring*. Nature, 393(6685), 573–577.  
+* 8. Nowak, M. A., & Sigmund, K. (1998). *Evolution of indirect reciprocity by image scoring*. Nature, 393(6685), 573–577.  
   Retrieved from https://www.nature.com/articles/31225
-* Leibo, J. Z., Zambaldi, V., Lanctot, M., Marecki, J., & Graepel, T. (2017). 
+* 9. Leibo, J. Z., Zambaldi, V., Lanctot, M., Marecki, J., & Graepel, T. (2017). 
   *Multi-agent Reinforcement Learning in Sequential Social Dilemmas*. 
   arXiv preprint arXiv:1702.03037. 
   Retrieved from https://doi.org/10.48550/arXiv.1702.03037
-* Hilbe, C., Schmid, L., Tkadlec, J., Chatterjee, K., & Nowak, M. A. (2018). 
+* 10. Hilbe, C., Schmid, L., Tkadlec, J., Chatterjee, K., & Nowak, M. A. (2018). 
   *Indirect reciprocity with private, noisy, and incomplete information*. 
   Proceedings of the National Academy of Sciences, 115(48), 12241–12246. 
   https://doi.org/10.1073/pnas.1810565115

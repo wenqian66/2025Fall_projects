@@ -3,6 +3,8 @@ from config import GameConfig
 from simulation import run_simulation, aggregate_monte_carlo_results, analyze_trial
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
 
 def check_single_strategy(strategy_name, num_players, num_rounds):
     config = GameConfig(
@@ -73,7 +75,8 @@ def plot_convergence(data, strategies):
     ax2.grid(alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig('convergence.png', dpi=300)
+    os.makedirs('figures', exist_ok=True)
+    plt.savefig('figures/convergence.png', dpi=300)
 
 
 def validate():
