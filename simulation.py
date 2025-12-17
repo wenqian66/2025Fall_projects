@@ -231,11 +231,4 @@ def aggregate_monte_carlo_results(results):
     }
 
 
-if __name__ == "__main__":
-    from config import GameConfig
-
-    test_config = GameConfig(num_rounds=1000, num_trials=10)
-    results = run_monte_carlo(test_config)
-    aggregated = aggregate_monte_carlo_results(results)
-    print_results_with_ci(aggregated)
 
