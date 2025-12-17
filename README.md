@@ -13,7 +13,7 @@ The data structures and design details are documented in code_structure.md.
 **Note**: I removed the welfare system design from the final model. A full welfare mechanism is hard to define and implement in a simple way, and would add significant complexity to both analysis and algorithm design. 
 Instead, we keep a basic elimination rule: players with negative wealth are removed from the game.
 
-Papers cited in [7–10] mainly provide the theoretical motivation for our design rather than direct code implementations. We do not copy algorithms from these works.
+Papers cited in [7-10] mainly provide the theoretical motivation for our design rather than direct code implementations. We do not copy algorithms from these works.
 
 For example, these papers emphasize that mutual cooperation strengthens long-term relationships, while unilateral defection is often more damaging than mutual defection.
 In our model, this idea is implemented at the system level through the network update rules.
