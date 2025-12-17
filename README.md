@@ -6,9 +6,6 @@ Wenqian Chen
 **Project Type:**
 Type I: Formal Critique and Improvement of a Published Data Analysis
 
-**GitHub Repository:**
-[https://github.com/wenqian66/2025Fall_projects](https://github.com/wenqian66/2025Fall_projects)
-
 ---
 
 ## **Project Description**

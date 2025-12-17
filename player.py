@@ -1,8 +1,6 @@
 # baseline(6) strategies code cite from axelrod and chatgpt
 #6+2 strategies in total
 import random
-from config import DEFAULT_PARAMS
-
 
 class OpponentView:
     def __init__(self, history):
@@ -43,19 +41,18 @@ class TFT:
         return opponent.history[-1]
 
 class GTFT:
-    """Generous TFT: cooperate first, then p to coopertate and (1-p) do TFT
-    >>> GTFT().strategy(OpponentView([])) == "C"
+    """Generous TFT: cooperate first, if face betry, then probability p to coopertate and (1-p) do TFT
+    >>> gtft = GTFT(p=0.1)
+    >>> gtft.strategy(OpponentView([])) == "C"
     True
-    >>> GTFT().strategy(OpponentView(['C'])) == "C"
+    >>> gtft.strategy(OpponentView(['C'])) == "C"
     True
-    >>> result = GTFT().strategy(OpponentView(['D']))
+    >>> result = GTFT(p=0.1).strategy(OpponentView(['D']))
     >>> result in ['C', 'D']
     True
     """
     name = "GTFT"
-    def __init__(self, p=None):
-        if p is None:
-            p = DEFAULT_PARAMS['gtft_forgiveness']
+    def __init__(self, p):
         self.p = p
     def strategy(self, opponent):
         if not opponent.history:
@@ -101,6 +98,10 @@ class RAND:
 class ReputationAwareTFT:
     """
     Reputation-based strategy: uses GTFT for high rep, Defect for low rep, TFT for medium
+    REMINDER:
+            GTFT means that coorperate first, if face betry, then probability p to coopertate and (1-p) do TFT
+            TFT means that Coorperate first, then copy opponent's previous action
+            (like if its opponent choose coorperate, they coorprate, if opponent choose betry/defect, then they also choose betry/defect)
     >>> ratft = ReputationAwareTFT(reputation_threshold=-0.5, high_rep_threshold=0.3)
     >>> opp1 = OpponentView([])
     >>> opp1._reputation = 0.0
@@ -120,15 +121,11 @@ class ReputationAwareTFT:
     """
     name = "Reputation Aware TFT"
 
-    def __init__(self, reputation_threshold=None, high_rep_threshold=None):
-        if reputation_threshold is None:
-            reputation_threshold = DEFAULT_PARAMS['reputation_threshold']
-        if high_rep_threshold is None:
-            high_rep_threshold = DEFAULT_PARAMS['ratft_high_rep_threshold']
+    def __init__(self, reputation_threshold, high_rep_threshold):
         self.reputation_threshold = reputation_threshold
         self.high_rep_threshold = high_rep_threshold
         self.tft = TFT()
-        self.gtft = GTFT()
+        self.gtft = GTFT(p=0.1)
 
     def strategy(self, opponent):
         opp_reputation = getattr(opponent, '_reputation', 0.0)
@@ -139,7 +136,6 @@ class ReputationAwareTFT:
             return "D"
         else:
             return self.tft.strategy(opponent)
-
 
 class CoalitionBuilder:
     """
@@ -166,9 +162,7 @@ class CoalitionBuilder:
     """
     name = "Coalition Builder"
 
-    def __init__(self, K=None):
-        if K is None:
-            K = DEFAULT_PARAMS['network_threshold']
+    def __init__(self, K):
         self.K = K
         self.tft = TFT()
 
