@@ -20,6 +20,8 @@ In our model, this idea is implemented at the system level through the network u
 Specifically, network strength increases only when both players cooperate, while any outcome involving defection reduces trust symmetrically.
 Many aspects of our environment design are inspired by the theoretical insights from these papers.
 
+ai tools were used in this project to assist with code drafting and debugging.
+
 ---
 
 ## **Project Description**
