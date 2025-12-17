@@ -1,111 +1,117 @@
 #ai tool used
+from config import GameConfig
+from simulation import run_simulation, aggregate_monte_carlo_results, analyze_trial
 import numpy as np
-from simulation import run_simulation, PlayerWrapper, play_round
-from player import AllC, AllD, ReputationAwareTFT, CoalitionBuilder, TFT
-from environment import EnvironmentUpdater
+import matplotlib.pyplot as plt
+
+def check_single_strategy(strategy_name, num_players, num_rounds):
+    config = GameConfig(
+        player_counts={strategy_name: num_players},
+        num_rounds=num_rounds,
+        num_trials=1
+    )
+    players = run_simulation(config)
+    wealth = [p.wealth for p in players]
+    bankruptcies = sum(p.bankrupt for p in players)
+    return np.mean(wealth), np.std(wealth), bankruptcies
+
+def check_extreme_parameter(param_name, param_value, num_rounds, num_trials=30):
+    results = []
+    for _ in range(num_trials):
+        config = GameConfig(num_rounds=num_rounds, num_trials=1, **{param_name: param_value})
+        players = run_simulation(config)
+        if param_name == 'noise':
+            tft = [p for p in players if p.strategy.name == "TFT"]
+            results.append(np.mean([p.wealth for p in tft]) if tft else 0)
+
+    return np.mean(results)
+
+
+def run_convergence(n_runs, strategies, num_rounds):
+    data = {s: {'wealth': [], 'survival': []} for s in strategies}
+
+    for n in range(1, n_runs + 1):
+        if n % 20 == 0:
+            print(f"  Run {n}/{n_runs}")
+
+        config = GameConfig(num_rounds=num_rounds, num_trials=1)
+        players = run_simulation(config)
+        trial_result = analyze_trial(players)
+        agg = aggregate_monte_carlo_results([trial_result])
+
+        for s in strategies:
+            if s in agg:
+                data[s]['wealth'].append(agg[s]['wealth_mean'])
+                data[s]['survival'].append(agg[s]['survival_mean'])
+
+    for s in strategies:
+        n = len(data[s]['wealth'])
+        data[s]['wealth'] = np.cumsum(data[s]['wealth']) / np.arange(1, n + 1)
+        data[s]['survival'] = np.cumsum(data[s]['survival']) / np.arange(1, n + 1)
+
+    return data
+
+
+def plot_convergence(data, strategies):
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
+
+    for s in strategies:
+        n = len(data[s]['wealth'])
+        ax1.plot(range(1, n + 1), data[s]['wealth'], linewidth=2, label=s)
+        ax2.plot(range(1, n + 1), data[s]['survival'], linewidth=2, label=s)
+
+    ax1.set_title("Wealth Convergence", fontsize=14)
+    ax1.set_xlabel("Number of Runs")
+    ax1.set_ylabel("Cumulative Average Wealth")
+    ax1.legend()
+    ax1.grid(alpha=0.3)
+
+    ax2.set_title("Survival Rate Convergence", fontsize=14)
+    ax2.set_xlabel("Number of Runs")
+    ax2.set_ylabel("Cumulative Average Survival Rate")
+    ax2.legend()
+    ax2.grid(alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig('convergence.png', dpi=300)
 
 
 def validate():
-    """
-    **Validation Checklist:**
+    print("=" * 70)
+    print("SANITY CHECKS")
+    print("=" * 70)
 
-    Payoffs work: AllC vs AllC gain equally; AllD exploits AllC successfully
-    Bankruptcy triggers when wealth < 0
-    RA-TFT reads opponent reputation
-    Coalition Builder reads network weight
+    print("\n1. All Same Strategy")
+    print("All AllC (everyone cooperates):")
+    mean_w, std_w, bankruptcies = check_single_strategy('AllC', 80, 1000)
+    print(f"  Avg wealth: {mean_w:.2f}, Std dev: {std_w:.2f}, Bankruptcies: {bankruptcies}")
 
-    Reputation: AllC reaches ~1.0, AllD reaches ~-1.0
-    Network weight: Cooperating pairs reach >100 after 10k rounds
-    """
+    print("\nAll AllD (everyone defects):")
+    mean_w, std_w, bankruptcies = check_single_strategy('AllD', 80, 1000)
+    print(f"  Avg wealth: {mean_w:.2f}, Bankruptcies: {bankruptcies}")
 
-    print("VALIDATION CHECKS")
-    print("=" * 60)
-    env = EnvironmentUpdater()
+    print("\n2. Zero Rounds")
+    config = GameConfig(num_rounds=0, initial_wealth=100, num_trials=1)
+    players = run_simulation(config)
+    all_100 = all(p.wealth == 100 for p in players)
+    no_bankrupt = all(not p.bankrupt for p in players)
+    print(f"  All wealth = 100: {all_100}, No bankruptcies: {no_bankrupt}")
 
-    print("\n1. Payoffs work")
-    p1 = PlayerWrapper(0, AllC, initial_wealth=0, noise=0)
-    p2 = PlayerWrapper(1, AllC, initial_wealth=0, noise=0)
-    play_round(p1, p2, env)
-    print(f"   AllC vs AllC: {p1.wealth} == {p2.wealth}? {p1.wealth == p2.wealth}")
+    print("\n3. Extreme Noise")
+    print(f"No noise: TFT wealth = {check_extreme_parameter('noise', 0.0, 1000):.2f}")
+    print(f"Full noise: TFT wealth = {check_extreme_parameter('noise', 1.0, 1000):.2f}")
 
-    p3 = PlayerWrapper(2, AllD, initial_wealth=0, noise=0)
-    p4 = PlayerWrapper(3, AllC, initial_wealth=0, noise=0)
-    play_round(p3, p4, env)
-    print(f"   AllD vs AllC: {p3.wealth} > {p4.wealth}? {p3.wealth > p4.wealth}")
+    print("CONVERGENCE ANALYSIS")
+    strategies = ['TFT', 'AllD', 'AllC']
+    print(f"Running 100 iterations...")
+    data = run_convergence(100, strategies, 500)
 
-    print("\n2. Bankruptcy triggers when wealth < 0")
-    p5 = PlayerWrapper(4, AllC, initial_wealth=-1)
-    env.update_bankruptcy(p5, welfare=0.05, threshold=0)
-    print(f"   wealth={p5.wealth:.2f}, bankrupt={p5.bankrupt}")
+    plot_convergence(data, strategies)
+    print("\nConvergence analysis complete. Saved to convergence.png")
 
-    print("\n3. RA-TFT reads opponent reputation")
-    p6 = PlayerWrapper(5, ReputationAwareTFT, noise=0)
-    p7 = PlayerWrapper(6, AllD, noise=0)
-    p7.reputation = -0.5
-    action = p6.choose_action(p7, env)
-    print(f"   RA-TFT vs low-rep opponent: action={action} (should be D)")
-
-    print("\n4. Coalition Builder reads network weight")
-    p8 = PlayerWrapper(7, CoalitionBuilder, noise=0)
-    p9 = PlayerWrapper(8, AllC, noise=0)
-    p8.weights[p9.id] = 5
-    action = p8.choose_action(p9, env)
-    print(f"   CB with weight=5: action={action} (should be C, first TFT, even default K=10)")
-
-    p8.weights[p9.id] = 15
-    action = p8.choose_action(p9, env)
-    print(f"   CB with weight=15: action={action} (should be C)")
-
-    #Reputation: AllC reaches ~1.0, AllD reaches ~-1.0
-    #Network weight: Cooperating pairs reach >100 after 10k rounds
-    print("\n5. Long-term: Reputation & Network weights (10k rounds)")
-    players = run_simulation(rounds=10000, initial_wealth=10, noise=0.05)
-
-    allc = [p for p in players if p.strategy.name == "AllC"]
-    alld = [p for p in players if p.strategy.name == "AllD"]
-
-    for p in players:
-        print(f"Player {p.id}: {p.strategy.name}, wealth={p.wealth:.1f}, bankrupt={p.bankrupt}")
-        print(f"  Weights: {p.weights}")
-        print()
-
-    print(f"   AllC reputation: {np.mean([p.reputation for p in allc]):+.3f}")
-    print(f"   AllD reputation: {np.mean([p.reputation for p in alld]):+.3f}")
-
-    all_weights = [w for p in players for w in p.weights.values()]
-    print(f"   Max network weight: {max(all_weights):.1f}") #the number around 240 .. make K=10 reasonable
-
-    print("\n6. Known Outcomes: TFT vs TFT (no noise)")
-    print("   Expected: Full cooperation, equal wealth growth")
-    p10 = PlayerWrapper(10, TFT, initial_wealth=0, noise=0)
-    p11 = PlayerWrapper(11, TFT, initial_wealth=0, noise=0)
-    for _ in range(100):
-        play_round(p10, p11, env)
-    print(f"   After 100 rounds: p10={p10.wealth:.1f}, p11={p11.wealth:.1f}")
-    print(f"   Equal? {abs(p10.wealth - p11.wealth) < 0.01}")
-
-    print("\n7. Known Outcomes: AllD vs AllD")
-    print("   Expected: Both bankrupt quickly")
-    p12 = PlayerWrapper(12, AllD, initial_wealth=10, noise=0)
-    p13 = PlayerWrapper(13, AllD, initial_wealth=10, noise=0)
-    for _ in range(100):
-        play_round(p12, p13, env, welfare=0.05)
-    print(f"   After 100 rounds: both bankrupt? {p12.bankrupt and p13.bankrupt}")
-
-    print("\n8. Convergence: Multiple identical players have similar results")
-    print("   Expected: 5 AllC players should have similar wealth")
-    players = run_simulation(rounds=10000)
-    allc_wealth = [p.wealth for p in players if p.strategy.name == "AllC"]
-    wealth_std = np.std(allc_wealth)
-    print(f"   AllC wealth std dev: {wealth_std:.2f} (should be < 50)")
-
-    print("\n9. Random Pairing Fairness")
-    print("   Expected: Mean interactions ≈ 128 per pair (10k rounds, 40 players)")
-    all_interactions = [len(h) for p in players for h in p.opp_history.values()]
-    print(f"   Mean interactions: {np.mean(all_interactions):.1f}")
-    print(f"   Std dev: {np.std(all_interactions):.1f}")
-
-
+    for s in strategies:
+        if len(data[s]['wealth']) > 0:
+            print(f"  {s}: wealth={data[s]['wealth'][-1]:.2f}, survival={data[s]['survival'][-1]:.2%}")
 
 if __name__ == "__main__":
     validate()
