@@ -1,6 +1,5 @@
 #chatgpt used
 import random
-from config import PAYOFF
 
 class EnvironmentUpdater:
     def apply_noise(self, action, noise):
@@ -12,7 +11,6 @@ class EnvironmentUpdater:
         'C'
         >>> env.apply_noise("D", 0)
         'D'
-
         >>> # full noise always flips
         >>> flipped = [env.apply_noise("C", 1) for _ in range(5)]
         >>> all(a == 'D' for a in flipped)
@@ -22,35 +20,39 @@ class EnvironmentUpdater:
             return "D" if action == "C" else "C"
         return action
 
-    def update_payoff(self, p1, p2, a1, a2):
+
+    def update_payoff(self, p1, p2, a1, a2, config):
         """
         p1,p2 are the players
         a1,a2 are the chosen action
+        >>> from config import GameConfig
         >>> class P: pass
         >>> p1, p2 = P(), P()
         >>> p1.wealth, p2.wealth = 0, 0
         >>> env = EnvironmentUpdater()
+        >>> config = GameConfig()
 
-        >>> env.update_payoff(p1, p2, "C", "C")
+        >>> env.update_payoff(p1, p2, "C", "C", config)
         >>> (p1.wealth, p2.wealth)
-        (3, 3)
-
-        >>> p1.wealth, p2.wealth = 0, 0
-        >>> env.update_payoff(p1, p2, "D", "D")
-        >>> (p1.wealth, p2.wealth)
-        (-2, -2)
+        (2, 2)
 
         >>> p1.wealth, p2.wealth = 0, 0
-        >>> env.update_payoff(p1, p2, "C", "D")
+        >>> env.update_payoff(p1, p2, "D", "D", config)
         >>> (p1.wealth, p2.wealth)
-        (-3, 4)
+        (-4, -4)
 
         >>> p1.wealth, p2.wealth = 0, 0
-        >>> env.update_payoff(p1, p2, "D", "C")
+        >>> env.update_payoff(p1, p2, "C", "D", config)
         >>> (p1.wealth, p2.wealth)
-        (4, -3)
+        (-5, 6)
+
+        >>> p1.wealth, p2.wealth = 0, 0
+        >>> env.update_payoff(p1, p2, "D", "C", config)
+        >>> (p1.wealth, p2.wealth)
+        (6, -5)
         """
-        payoff1, payoff2 = PAYOFF[(a1, a2)]
+
+        payoff1, payoff2 = config.payoff[(a1, a2)]
         p1.wealth += payoff1
         p2.wealth += payoff2
 
@@ -163,16 +165,16 @@ class EnvironmentUpdater:
         if p.bankrupt:
             p.wealth += welfare
 
-    def update_all(self, p1, p2, a1, a2, params):
-        self.update_payoff(p1, p2, a1, a2)
+    def update_all(self, p1, p2, a1, a2, config):
+        self.update_payoff(p1, p2, a1, a2, config)
         self.update_reputation(
             p1, p2, a1, a2,
-            params['alpha_c'], params['alpha_d'],
-            params['reputation_max'], params['reputation_min']
+            config.alpha_c, config.alpha_d,
+            config.reputation_max, config.reputation_min
         )
         self.update_network(
             p1, p2, a1, a2,
-            params['gamma'], params['delta']
+            config.gamma, config.delta
         )
-        self.update_bankruptcy(p1, params['welfare'], params['wealth_threshold'])
-        self.update_bankruptcy(p2, params['welfare'], params['wealth_threshold'])
+        self.update_bankruptcy(p1, config.welfare, config.wealth_threshold)
+        self.update_bankruptcy(p2, config.welfare, config.wealth_threshold)
