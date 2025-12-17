@@ -19,6 +19,7 @@ For example, these papers emphasize that mutual cooperation strengthens long-ter
 In our model, this idea is implemented at the system level through the network update rules.
 Specifically, network strength increases only when both players cooperate, while any outcome involving defection reduces trust symmetrically.
 Many aspects of our environment design are inspired by the theoretical insights from these papers.
+
 ---
 
 ## **Project Description**
