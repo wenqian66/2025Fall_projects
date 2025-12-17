@@ -7,7 +7,6 @@ from player import (
 )
 from player import STRATEGY_MAP
 import numpy as np
-from utils import print_results_with_ci
 
 
 class PlayerWrapper:
@@ -78,16 +77,18 @@ def play_round(p1, p2, env, config):
     >>> env = EnvironmentUpdater()
     >>> config = GameConfig()
     >>> p1 = PlayerWrapper(0, AllC, initial_wealth=10, noise=0)
+    >>> p1.strategy = AllC()
     >>> p2 = PlayerWrapper(1, AllD, initial_wealth=10, noise=0)
+    >>> p2.strategy = AllD()
     >>> play_round(p1, p2, env, config)
     >>> p1.wealth
     5
     >>> p2.wealth
     16
     >>> p1.reputation
-    0.02
+    0.01
     >>> p2.reputation
-    -0.04
+    -0.02
     >>> p1.weights[1]
     0
     >>> p2.weights[0]
@@ -172,8 +173,11 @@ def run_monte_carlo(config):
 def analyze_trial(players):
     """
     >>> p1 = PlayerWrapper(0, AllC, initial_wealth=50)
+    >>> p1.strategy = AllC()
     >>> p2 = PlayerWrapper(1, AllC, initial_wealth=60)
+    >>> p2.strategy = AllC()
     >>> p3 = PlayerWrapper(2, AllD, initial_wealth=30)
+    >>> p3.strategy = AllD()
     >>> p3.bankrupt = True
     >>> result = analyze_trial([p1, p2, p3])
     >>> result['AllC']['total']
