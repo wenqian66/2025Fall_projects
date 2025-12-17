@@ -1,15 +1,14 @@
 #chatgpt used
-
 import random
 from environment import EnvironmentUpdater
-from config import DEFAULT_PARAMS
 from player import (
     OpponentView,
     AllC, AllD, TFT, GRIM,
 )
-from utils import _prepare_params, print_results_with_ci
 from player import STRATEGY_MAP
 import numpy as np
+from utils import print_results_with_ci
+
 
 class PlayerWrapper:
     """
@@ -27,7 +26,7 @@ class PlayerWrapper:
     """
     def __init__(self, player_id, strategy_class, initial_wealth=10, noise=0.05):
         self.id = player_id
-        self.strategy = strategy_class()
+        self.strategy = None
         self.my_history = {}
         self.opp_history = {}
         self.reputation = 0.0
@@ -73,17 +72,18 @@ class PlayerWrapper:
         self.opp_history[opponent_id].append(opp_action)
 
 
-def play_round(p1, p2, env, params):
+def play_round(p1, p2, env, config):
     """
+    >>> from config import GameConfig
     >>> env = EnvironmentUpdater()
-    >>> params = DEFAULT_PARAMS
+    >>> config = GameConfig()
     >>> p1 = PlayerWrapper(0, AllC, initial_wealth=10, noise=0)
     >>> p2 = PlayerWrapper(1, AllD, initial_wealth=10, noise=0)
-    >>> play_round(p1, p2, env, params)
+    >>> play_round(p1, p2, env, config)
     >>> p1.wealth
-    7
+    5
     >>> p2.wealth
-    14
+    16
     >>> p1.reputation
     0.02
     >>> p2.reputation
@@ -97,8 +97,7 @@ def play_round(p1, p2, env, params):
     a2 = p2.choose_action(p1, env)
     p1.record_actions(p2.id, a1, a2)
     p2.record_actions(p1.id, a2, a1)
-
-    env.update_all(p1, p2, a1, a2, params)
+    env.update_all(p1, p2, a1, a2, config)
 
 
 def random_pairing(players):
@@ -126,13 +125,11 @@ def random_pairing(players):
     return pairs
 
 
-def run_simulation(params=None, **kwargs):
-    params = _prepare_params(params, kwargs)
-
-    player_counts = params['player_counts']
-    rounds = params['num_rounds']
-    initial_wealth = params['initial_wealth']
-    noise = params['noise']
+def run_simulation(config):
+    player_counts = config.player_counts
+    rounds = config.num_rounds
+    initial_wealth = config.initial_wealth
+    noise = config.noise
 
     env = EnvironmentUpdater()
     players = []
@@ -141,26 +138,36 @@ def run_simulation(params=None, **kwargs):
     for strategy_name, count in player_counts.items():
         strategy_class = STRATEGY_MAP[strategy_name]
         for _ in range(count):
-            players.append(PlayerWrapper(player_id, strategy_class, initial_wealth, noise))
+            player = PlayerWrapper(player_id, strategy_class, initial_wealth, noise)
+
+            if strategy_name == 'GTFT':
+                player.strategy = strategy_class(config.gtft_forgiveness)
+            elif strategy_name == 'ReputationAwareTFT':
+                player.strategy = strategy_class(config.reputation_threshold, config.ratft_high_rep_threshold)
+            elif strategy_name == 'CoalitionBuilder':
+                player.strategy = strategy_class(config.network_threshold)
+            else:
+                player.strategy = strategy_class()
+
+            players.append(player)
             player_id += 1
 
     for round_num in range(rounds):
         for p1, p2 in random_pairing(players):
-            play_round(p1, p2, env, params)
+            play_round(p1, p2, env, config)
     return players
 
 
-def run_monte_carlo(params=None, **kwargs):
-    params = _prepare_params(params, kwargs)
-
-    num_trials = params['num_trials']
+def run_monte_carlo(config):
+    num_trials = config.num_trials
     results = []
     for trial in range(num_trials):
         if trial % 100 == 0:
             print(f"Trial {trial}/{num_trials}")
-        players = run_simulation(params)
+        players = run_simulation(config)
         results.append(analyze_trial(players))
     return results
+
 
 def analyze_trial(players):
     """
@@ -223,43 +230,12 @@ def aggregate_monte_carlo_results(results):
         for strategy, data in aggregated.items()
     }
 
+
 if __name__ == "__main__":
-    test_params = DEFAULT_PARAMS.copy()
-    test_params['num_rounds'] = 10000
-    test_params['num_trials'] = 100
+    from config import GameConfig
 
-    results = run_monte_carlo(test_params)
+    test_config = GameConfig(num_rounds=1000, num_trials=10)
+    results = run_monte_carlo(test_config)
     aggregated = aggregate_monte_carlo_results(results)
-
     print_results_with_ci(aggregated)
 
-
-"""
-Process finished with exit code 0
-
-
-/Users/wenqian/Desktop/msim/is597/2025Fall_projects/venv/bin/python /Users/wenqian/Desktop/msim/is597/2025Fall_projects/simulation.py
-Trial 0/100
-AllC                : Survival=90.00% ±1.82%, Wealth=14162.91 ±287.62
-AllD                : Survival=0.00% ±0.00%, Wealth=-2.33 ±0.07
-TFT                 : Survival=87.50% ±2.14%, Wealth=5267.40 ±227.79
-GTFT                : Survival=94.10% ±1.47%, Wealth=11559.54 ±168.76
-Grim                : Survival=0.00% ±0.00%, Wealth=-2.30 ±0.07
-Random              : Survival=0.00% ±0.00%, Wealth=-2.49 ±0.08
-Reputation Aware TFT: Survival=91.90% ±1.77%, Wealth=4215.57 ±671.68
-Coalition Builder   : Survival=95.00% ±1.29%, Wealth=13631.37 ±194.44
-
-Process finished with exit code 0
-
-/Users/wenqian/Desktop/msim/is597/2025Fall_projects/venv/bin/python /Users/wenqian/Desktop/msim/is597/2025Fall_projects/simulation.py
-Trial 0/100
-AllC                : Survival=89.40% ±2.13%, Wealth=14079.63 ±331.56
-AllD                : Survival=0.00% ±0.00%, Wealth=-2.38 ±0.07
-TFT                 : Survival=87.90% ±2.15%, Wealth=5376.58 ±255.16
-GTFT                : Survival=94.50% ±1.34%, Wealth=11608.82 ±166.79
-Grim                : Survival=0.00% ±0.00%, Wealth=-2.32 ±0.08
-Random              : Survival=0.00% ±0.00%, Wealth=-2.58 ±0.08
-Reputation Aware TFT: Survival=90.80% ±1.81%, Wealth=4052.32 ±661.06
-Coalition Builder   : Survival=94.20% ±1.36%, Wealth=13572.21 ±194.59
-
-Process finished with exit code 0"""
